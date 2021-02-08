@@ -11,12 +11,12 @@ async function createNewUser(event) {
 
     } else {
       let body = {
-        username: formData.get("username"),
-        password: formData.get("password"),
-        phone:    formData.get("phone"),
-        country:  formData.get("country"),
-        city:     formData.get("city"),
-        address:  formData.get("address")
+        username:       formData.get("username"),
+        password:       formData.get("password"),
+        phone_number:   formData.get("phone_number"),
+        country:        formData.get("country"),
+        city:           formData.get("city"),
+        street_address: formData.get("street_address")
         };
       response = await sendRequest("POST", `${HOST}/api/token/`, body);
       if (response.ok) {
