@@ -14,7 +14,7 @@ dj-database-url = "==0.5.0"
 django-cleanup = "==5.0.0"
 django-cors-headers = "==3.4.0"
 djangorestframework = "==3.11.1"
-djangorestframework-simplejwt = "==4.4.0"
+djangorestframework-simplejwt
 gunicorn = "==20.0.4"
 httpie = "==2.2.0"
 idna = "==2.10"
