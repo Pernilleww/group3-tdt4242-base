@@ -43,7 +43,7 @@ ALLOWED_HOSTS = [
     "10." + groupid + ".0.4",
     "molde.idi.ntnu.no",
     "10.0.2.2",
-    "safe-meadow-86842.herokuapp.com"
+    "tdt4242-base.herokuapp.com"
 ]
 
 # Application definition
