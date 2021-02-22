@@ -14,6 +14,6 @@ staging:
     - apt-get update -qy
     - apt-get install -y ruby-dev
     - gem install dpl
-    - dpl --provider=heroku --app=tdt4237 --api-key=$HEROKU_STAGING_API_KEY
+    - dpl --provider=heroku --app=tdt4242-base --api-key=$HEROKU_STAGING_API_KEY
   only:
     - master
