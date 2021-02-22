@@ -2,8 +2,17 @@ variables:
   HEROKU_APP_NAME: tdt4242-base
   HEROKU_REGISTRY_IMAGE: registry.heroku.com/${HEROKU_APP_NAME}/web
 
-image: python:3
+image: docker:stable
+services:
+  - docker:dind
+
+stages:
+  - test
+  - build_and_deploy
+
 test:
+  image: python:3
+  stage: test
   script:
   # this configures Django application to use attached postgres database that is run on `postgres` host
     - cd backend/secfit
@@ -11,14 +20,7 @@ test:
     - pip install -r requirements.txt
     - python manage.py test
 
-services:
-  - docker:dind
-
-stages:
-  - build_and_deploy
-
 build_and_deploy:
-  image: docker:stable
   stage: build_and_deploy
   script:
     - apk add --no-cache curl
