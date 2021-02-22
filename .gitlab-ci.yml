@@ -3,10 +3,10 @@ variables:
 
 image: python:3
 test:
+  context: backend/secfit
   script:
   # this configures Django application to use attached postgres database that is run on `postgres` host
     - apt-get update -qy
-    - cd backend/secfit
     - pip install -r requirements.txt
     - python manage.py test
 
