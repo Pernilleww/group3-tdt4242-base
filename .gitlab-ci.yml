@@ -11,15 +11,6 @@ test:
     - python manage.py test
 
 
-services:
-  - docker:dind
-build:
-  image: docker
-  script:
-    - apk add --no-cache docker-compose
-    - docker-compose up -d
-
-
 staging:
   type: deploy
   image: ruby
