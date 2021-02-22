@@ -5,7 +5,7 @@ image: python:3
 test:
   script:
   # this configures Django application to use attached postgres database that is run on `postgres` host
-    - - apt-get update -qy
+    - apt-get update -qy
     - cd backend/secfit
     - pip install -r requirements.txt
     - python manage.py test
