@@ -2,3 +2,6 @@ backend/secfit/.vscode/
 backend/secfit/*/migrations/__pycache__/
 backend/secfit/*/__pycache__/
 backend/secfit/db.sqlite3
+
+.idea/
+venv/
