@@ -2,18 +2,18 @@ image: python:3
 test:
   script:
   # this configures Django application to use attached postgres database that is run on `postgres` host
-  - cd backend/secfit
-  - apt-get update -qy
-  - pip install -r requirements.txt
-  - python manage.py test
+    - - apt-get update -qy
+    - cd backend/secfit
+    - pip install -r requirements.txt
+    - python manage.py test
 
 staging:
   type: deploy
   image: ruby
   script:
-  - apt-get update -qy
-  - apt-get install -y ruby-dev
-  - gem install dpl
-  - dpl --provider=heroku --app=tdt4237 --api-key=$HEROKU_STAGING_API_KEY
+    - apt-get update -qy
+    - apt-get install -y ruby-dev
+    - gem install dpl
+    - dpl --provider=heroku --app=tdt4237 --api-key=$HEROKU_STAGING_API_KEY
   only:
-  - master
+    - master
