@@ -3,7 +3,7 @@ variables:
   HEROKU_REGISTRY_IMAGE: registry.heroku.com/${HEROKU_APP_NAME}/web
 stages:
   - test
-  - build_image
+  - build
   - release
 
 test:
