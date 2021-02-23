@@ -16,21 +16,21 @@ test:
     - pip install -r requirements.txt
     - python manage.py test
 
-build_image:
-  only:
-    - master
-  image: registry.gitlab.com/majorhayden/container-buildah
+image:
+  name: docker/compose:latest
+services:
+    - docker:dind
+
+before_script:
+  - docker version
+  - docker-compose version
+
+build:
+
   stage: build
-  variables:
-    STORAGE_DRIVER: "vfs"
-    BUILDAH_FORMAT: "docker"
-  before_script:
-    - dnf install -y nodejs
-    - curl https://cli-assets.heroku.com/install.sh | sh
-    - sed -i "/^mountopt =.*/d" /etc/containers/storage.conf
   script:
-    - buildah bud --iidfile iidfile -t rust-python-demo:$CI_COMMIT_SHORT_SHA .
-    - buildah push --creds=_:$(heroku auth:token) $(cat iidfile) registry.heroku.com/tdt4242-base/web
+    - apk add --no-cache docker-compose
+    - docker-compose up -d
 
 release:
   only:
