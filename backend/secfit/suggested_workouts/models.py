@@ -1,6 +1,7 @@
 from django.db import models
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 
 
 class SuggestedWorkout(models.Model):
@@ -69,5 +70,8 @@ class WorkoutRequest(models.Model):
         suggested_workout.date = date
 
     def decline(self):
+        suggested_workout = SuggestedWorkout.get(author=self.sender)
+        # Delete the created workout if request declined
+        suggested_workout.delete()
         is_active = False
         self.save()
