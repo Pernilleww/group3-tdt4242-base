@@ -3,7 +3,8 @@ variables:
   HEROKU_REGISTRY_IMAGE: registry.heroku.com/${HEROKU_APP_NAME}/web
 stages:
   - test
-  - build_and_deploy
+  - build_image
+  - release
 
 test:
   image: python:3
@@ -15,20 +16,29 @@ test:
     - pip install -r requirements.txt
     - python manage.py test
 
-build_and_deploy:
-  image: docker:stable
-  services:
-    - docker:dind
-  stage: build_and_deploy
+build_image:
+  only:
+    - master
+  image: registry.gitlab.com/majorhayden/container-buildah
+  stage: build
+  variables:
+    STORAGE_DRIVER: "vfs"
+    BUILDAH_FORMAT: "docker"
+  before_script:
+    - dnf install -y nodejs
+    - curl https://cli-assets.heroku.com/install.sh | sh
+    - sed -i '/^mountopt =.*/d' /etc/containers/storage.conf
   script:
-    - apk add --no-cache curl
-    - docker login -u _ -p $HEROKU_AUTH_TOKEN registry.heroku.com
-    - docker pull $HEROKU_REGISTRY_IMAGE || true
-    - docker build
-      --cache-from $HEROKU_REGISTRY_IMAGE
-      --tag $HEROKU_REGISTRY_IMAGE
-      --file ./Dockerfile
-      "."
-    - docker push $HEROKU_REGISTRY_IMAGE
-    - chmod +x ./release.sh
-    - ./release.sh
+    - buildah bud --iidfile iidfile -t rust-python-demo:$CI_COMMIT_SHORT_SHA .
+    - buildah push --creds=_:$(heroku auth:token) $(cat iidfile) registry.heroku.com/tdt4242-base/web
+
+release:
+  only:
+    - master
+  image: node:10.17-alpine
+  stage: release
+  before_script:
+    - apk add curl bash
+    - curl https://cli-assets.heroku.com/install.sh | sh
+  script:
+    - heroku container:release -a tdt4242-base web
