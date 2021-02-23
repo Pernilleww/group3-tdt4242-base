@@ -27,7 +27,7 @@ build_image:
   before_script:
     - dnf install -y nodejs
     - curl https://cli-assets.heroku.com/install.sh | sh
-    - sed -i '/^mountopt =.*/d' /etc/containers/storage.conf
+    - sed -i "/^mountopt =.*/d" /etc/containers/storage.conf
   script:
     - buildah bud --iidfile iidfile -t rust-python-demo:$CI_COMMIT_SHORT_SHA .
     - buildah push --creds=_:$(heroku auth:token) $(cat iidfile) registry.heroku.com/tdt4242-base/web
