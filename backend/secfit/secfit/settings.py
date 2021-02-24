@@ -59,8 +59,9 @@ INSTALLED_APPS = [
     "workouts.apps.WorkoutsConfig",
     "users.apps.UsersConfig",
     "comments.apps.CommentsConfig",
+    "suggested_workouts.apps.SuggestedWorkoutsConfig",
     "corsheaders",
-    "suggested_workouts",
+
 ]
 
 MIDDLEWARE = [
