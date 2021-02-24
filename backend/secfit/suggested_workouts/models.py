@@ -21,7 +21,7 @@ class SuggestedWorkout(models.Model):
     visibility = models.CharField(
         max_length=2, choices=VISIBILITY_CHOICES, default=COACH
     )
-    coach = models.ForeignKey(
+    coach = models.OneToOneField(
         get_user_model(), on_delete=models.CASCADE, related_name="author")
     athlete = models.ForeignKey(
         get_user_model(), on_delete=models.CASCADE, related_name="athlete")

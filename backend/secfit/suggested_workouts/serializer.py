@@ -1,8 +1,8 @@
-from rest_framework import serializer
+from rest_framework import serializers
 from .models import SuggestedWorkout
 
 
 class SuggestedWorkoutSerializer(serializers.ModelSerializer):
     class Meta:
         model = SuggestedWorkout
-        fields = exclude('coach')
+        exclude = ['coach']
