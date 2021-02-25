@@ -15,25 +15,28 @@ def createSuggestedWorkouts(request):
     serializer = SuggestedWorkoutSerializer(data=request.data)
     if serializer.is_valid():
         chosen_athlete = request.data['athlete']
-        print(request.user)
-        print(request.user.id)
         print(request.user.coach)
+        # Denne printer ikke ut noen ting? Burde gi en liste over alle athletes...
         print(request.user.athletes)
-        # if(chosen_athlete not in request.user.athletes):
-        #     return Response({"message": "You can not assign the workout to someone who is not your athlete."}, status=status.HTTP_400_BAD_REQUEST)
+        if(not request.user.athletes or chosen_athlete not in request.user.athletes):
+            return Response({"message": "You can not assign the workout to someone who is not your athlete."}, status=status.HTTP_400_BAD_REQUEST)
         SuggestedWorkout.objects.create(
             coach=request.user, **serializer.validated_data)
-        return Response(status=status.HTTP_201_CREATED)
+        return Response({"message": "Suggested workout successfully created!"}, status=status.HTTP_201_CREATED)
     return Response({"message": "Something went wrong.", "error": serializer.errors})
 
 
 @api_view(['GET'])
 def listAthleteSuggestedWorkouts(request):
-    suggested_workout = SuggestedWorkout.objects.all()
-    serializer = SuggestedWorkoutSerializer(suggested_workout, many=True)
-    return Response({"message": "Athlete's workout", "data": serializer.data})
+    # Henter ut riktige workouts gitt brukeren som sender requesten
+    suggested_workouts = SuggestedWorkout.objects.filter(athlete=request.user)
+    serializer = SuggestedWorkoutSerializer(suggested_workouts, many=True)
+    return Response({"message": "Suggested workouts to you (athlete)", "data": serializer.data}, status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])
 def listCoachSuggestedWorkouts(request):
-    return Response({"message": "Coach's suggested workout!"})
+    # Gjør spørring på workouts der request.user er coach
+    suggested_workouts = SuggestedWorkout.objects.filter(coach=request.user)
+    serializer = SuggestedWorkoutSerializer(suggested_workouts, many=True)
+    return Response({"message": "Suggested workouts from you (coach)", "data": serializer.data}, status=status.HTTP_200_OK)
