@@ -6,25 +6,6 @@ from django.utils import timezone
 
 class SuggestedWorkout(models.Model):
     # Visibility levels
-    PUBLIC = "PU"  # Visible to all authenticated users
-    COACH = "CO"  # Visible only to owner and their coach
-    PRIVATE = "PR"  # Visible only to owner
-    VISIBILITY_CHOICES = [
-        (PUBLIC, "Public"),
-        (COACH, "Coach"),
-        (PRIVATE, "Private"),
-    ]  # Choices for visibility level
-
-    name = models.CharField(max_length=100)
-    date = models.DateTimeField(null=True, blank=True)
-    notes = models.TextField()
-    visibility = models.CharField(
-        max_length=2, choices=VISIBILITY_CHOICES, default=COACH
-    )
-    coach = models.OneToOneField(
-        get_user_model(), on_delete=models.CASCADE, related_name="author")
-    athlete = models.ForeignKey(
-        get_user_model(), on_delete=models.CASCADE, related_name="athlete")
     ACCEPTED = "a"
     PENDING = "p"
     DECLINED = "d"
@@ -33,6 +14,13 @@ class SuggestedWorkout(models.Model):
         (PENDING, "Pending"),
         (DECLINED, "Declined"),
     )
+    name = models.CharField(max_length=100)
+    date = models.DateTimeField(null=True, blank=True)
+    notes = models.TextField()
+    coach = models.ForeignKey(
+        get_user_model(), on_delete=models.CASCADE, related_name="owner")
+    athlete = models.ForeignKey(
+        get_user_model(), on_delete=models.CASCADE, related_name="athlete")
 
     status = models.CharField(
         max_length=8, choices=STATUS_CHOICES, default=PENDING)
@@ -49,10 +37,7 @@ class SuggestedWorkout(models.Model):
 
 
 """
-Model for defining a request for a suggested workout to an Athlete.
-The sender will be the coach initiating the request and the reciever will be the Athlete to whom the
-coach request the suggested workout to.
-Inspired by https://youtu.be/hyJO4mkdwuM
+Mulig dette ikke bruker lenges da jeg skal bruke status feltet i SuggestedWorkouts i stedet.
 """
 
 
