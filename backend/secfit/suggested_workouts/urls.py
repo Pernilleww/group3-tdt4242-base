@@ -8,5 +8,7 @@ urlpatterns = [
     path("api/suggested_workouts/athlete-list",
          views.listAthleteSuggestedWorkouts, name="suggested_workouts_for_athlete"),
     path("api/suggested_workouts/coach-list",
-         views.listCoachSuggestedWorkouts, name="suggested_workouts_by_coach")
+         views.listCoachSuggestedWorkouts, name="suggested_workouts_by_coach"),
+    path("api/suggested_workout/update/<int:pk>", views.updateSuggestedWorkout,
+         name="update_date_for_suggested_workout")
 ]
