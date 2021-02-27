@@ -3,12 +3,14 @@ from suggested_workouts import views
 from rest_framework.urlpatterns import format_suffix_patterns
 
 urlpatterns = [
-    path("api/suggested_workouts/create/", views.createSuggestedWorkouts,
+    path("api/suggested-workouts/create/", views.createSuggestedWorkouts,
          name="suggested_workouts"),
-    path("api/suggested_workouts/athlete-list",
+    path("api/suggested-workouts/athlete-list",
          views.listAthleteSuggestedWorkouts, name="suggested_workouts_for_athlete"),
-    path("api/suggested_workouts/coach-list",
+    path("api/suggested-workouts/coach-list",
          views.listCoachSuggestedWorkouts, name="suggested_workouts_by_coach"),
-    path("api/suggested_workout/update/<int:pk>", views.updateSuggestedWorkout,
-         name="update_date_for_suggested_workout")
+    path("api/suggested-workout/update/<int:pk>", views.updateSuggestedWorkout,
+         name="update_date_for_suggested_workout"),
+    path("api/suggested-workouts", views.listAllSuggestedWorkouts,
+         name="list_all_suggested_workouts"),
 ]
