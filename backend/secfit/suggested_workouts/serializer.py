@@ -7,4 +7,5 @@ class SuggestedWorkoutSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SuggestedWorkout
-        fields = ['id', 'athlete', 'name', 'notes', 'date', 'status']
+        fields = ['id', 'athlete', 'name', 'notes', 'date',
+                  'status', 'suggested_exercise_instances']

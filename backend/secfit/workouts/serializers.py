@@ -3,6 +3,7 @@
 from rest_framework import serializers
 from rest_framework.serializers import HyperlinkedRelatedField
 from workouts.models import Workout, Exercise, ExerciseInstance, WorkoutFile, RememberMe
+from suggested_workouts.models import SuggestedWorkout
 
 
 class ExerciseInstanceSerializer(serializers.HyperlinkedModelSerializer):
@@ -17,10 +18,13 @@ class ExerciseInstanceSerializer(serializers.HyperlinkedModelSerializer):
     workout = HyperlinkedRelatedField(
         queryset=Workout.objects.all(), view_name="workout-detail", required=False
     )
+    suggested_workout = HyperlinkedRelatedField(queryset=SuggestedWorkout.objects.all(
+    ), view_name="suggested-workout-detail", required=False)
 
     class Meta:
         model = ExerciseInstance
-        fields = ["url", "id", "exercise", "sets", "number", "workout"]
+        fields = ["url", "id", "exercise", "sets",
+                  "number", "workout", "suggested_workout"]
 
 
 class WorkoutFileSerializer(serializers.HyperlinkedModelSerializer):
@@ -101,10 +105,12 @@ class WorkoutSerializer(serializers.HyperlinkedModelSerializer):
         workout = Workout.objects.create(**validated_data)
 
         for exercise_instance_data in exercise_instances_data:
-            ExerciseInstance.objects.create(workout=workout, **exercise_instance_data)
+            ExerciseInstance.objects.create(
+                workout=workout, **exercise_instance_data)
         for file_data in files_data:
             WorkoutFile.objects.create(
-                workout=workout, owner=workout.owner, file=file_data.get("file")
+                workout=workout, owner=workout.owner, file=file_data.get(
+                    "file")
             )
 
         return workout
@@ -127,7 +133,8 @@ class WorkoutSerializer(serializers.HyperlinkedModelSerializer):
 
         instance.name = validated_data.get("name", instance.name)
         instance.notes = validated_data.get("notes", instance.notes)
-        instance.visibility = validated_data.get("visibility", instance.visibility)
+        instance.visibility = validated_data.get(
+            "visibility", instance.visibility)
         instance.date = validated_data.get("date", instance.date)
         instance.save()
 

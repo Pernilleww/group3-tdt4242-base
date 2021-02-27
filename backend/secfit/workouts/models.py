@@ -7,6 +7,7 @@ from django.db import models
 from django.core.files.storage import FileSystemStorage
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from suggested_workouts.models import SuggestedWorkout
 
 
 class OverwriteStorage(FileSystemStorage):
@@ -94,6 +95,8 @@ class ExerciseInstance(models.Model):
     Kyle's workout on 15.06.2029 had one exercise instance: 3 (sets) reps (unit) of
     10 (number) pushups (exercise type)
 
+    Each suggested workouts shall also have a relation with one or more exercise instances just like a regular workout.
+
     Attributes:
         workout:    The workout associated with this exercise instance
         exercise:   The exercise type of this instance
@@ -104,6 +107,8 @@ class ExerciseInstance(models.Model):
     workout = models.ForeignKey(
         Workout, on_delete=models.CASCADE, related_name="exercise_instances"
     )
+    suggested_workout = models.ForeignKey(
+        SuggestedWorkout, on_delete=models.CASCADE, related_name="suggested_exercise_instances", null=True)
     exercise = models.ForeignKey(
         Exercise, on_delete=models.CASCADE, related_name="instances"
     )
@@ -133,7 +138,8 @@ class WorkoutFile(models.Model):
         file:    The actual file that's being uploaded
     """
 
-    workout = models.ForeignKey(Workout, on_delete=models.CASCADE, related_name="files")
+    workout = models.ForeignKey(
+        Workout, on_delete=models.CASCADE, related_name="files")
     owner = models.ForeignKey(
         get_user_model(), on_delete=models.CASCADE, related_name="workout_files"
     )
