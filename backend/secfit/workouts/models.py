@@ -130,16 +130,19 @@ def workout_directory_path(instance, filename):
 
 
 class WorkoutFile(models.Model):
-    """Django model for file associated with a workout. Basically a wrapper.
+    """Django model for file associated with a workout or a suggested workout. Basically a wrapper.
 
     Attributes:
         workout: The workout for which this file has been uploaded
+        suggested_workout: The suggested workout for which the file has been uploaded
         owner:   The user who uploaded the file
         file:    The actual file that's being uploaded
     """
 
     workout = models.ForeignKey(
         Workout, on_delete=models.CASCADE, related_name="files")
+    suggested_workout = models.ForeignKey(
+        SuggestedWorkout, on_delete=models.CASCADE, related_name="suggested_workout_files", null=True)
     owner = models.ForeignKey(
         get_user_model(), on_delete=models.CASCADE, related_name="workout_files"
     )
