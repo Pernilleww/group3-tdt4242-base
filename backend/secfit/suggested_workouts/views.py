@@ -30,7 +30,8 @@ def listAthleteSuggestedWorkouts(request):
     suggested_workouts = SuggestedWorkout.objects.filter(athlete=request.user)
     if not request.user:
         return Response({"message": "You have to log in to see this information."}, status=status.HTTP_401_UNAUTHORIZED)
-    serializer = SuggestedWorkoutSerializer(suggested_workouts, many=True)
+    serializer = SuggestedWorkoutSerializer(
+        suggested_workouts, many=True, context={'request': request})
     return Response(data=serializer.data, status=status.HTTP_200_OK)
 
 
@@ -40,7 +41,8 @@ def listCoachSuggestedWorkouts(request):
     if not request.user:
         return Response({"message": "You have to log in to see this information."}, status=status.HTTP_401_UNAUTHORIZED)
     suggested_workouts = SuggestedWorkout.objects.filter(coach=request.user)
-    serializer = SuggestedWorkoutSerializer(suggested_workouts, many=True)
+    serializer = SuggestedWorkoutSerializer(
+        suggested_workouts, many=True, context={'request': request})
     return Response(data=serializer.data, status=status.HTTP_200_OK)
 
 
@@ -48,7 +50,8 @@ def listCoachSuggestedWorkouts(request):
 def listAllSuggestedWorkouts(request):
     # Lister alle workouts som er foreslått
     suggested_workouts = SuggestedWorkout.objects.all()
-    serializer = SuggestedWorkoutSerializer(suggested_workouts, many=True)
+    serializer = SuggestedWorkoutSerializer(
+        suggested_workouts, many=True, context={'request': request})
     if not request.user.id:
         return Response({"message": "You have to log in to see this information."}, status=status.HTTP_401_UNAUTHORIZED)
     elif((request.user.id,) not in list(SuggestedWorkout.objects.values_list('coach')) or (request.user.id,) not in list(SuggestedWorkout.objects.values_list('athlete'))):

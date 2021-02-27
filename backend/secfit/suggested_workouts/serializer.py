@@ -5,6 +5,11 @@ from workouts.serializers import WorkoutFileSerializer, ExerciseInstanceSerializ
 
 
 class SuggestedWorkoutSerializer(serializers.ModelSerializer):
+    suggested_exercise_instances = ExerciseInstanceSerializer(
+        many=True, required=False)
+    suggested_workout_files = WorkoutFileSerializer(
+        many=True, required=False)
+
     class Meta:
         model = SuggestedWorkout
         fields = ['id', 'athlete', 'name', 'notes', 'date',
