@@ -4,13 +4,19 @@ from .serializer import SuggestedWorkoutSerializer
 from users.models import User
 from rest_framework import status
 from rest_framework.response import Response
-
+from workouts.parsers import MultipartJsonParser
+from rest_framework.parsers import (
+    JSONParser
+)
+from rest_framework.decorators import parser_classes
 """
 Handling post request of a new suggested workout instance. Handling update, delete and list exercises as well.
 """
 
 
 @api_view(['POST'])
+@parser_classes([MultipartJsonParser,
+                 JSONParser])
 def createSuggestedWorkouts(request):
     serializer = SuggestedWorkoutSerializer(data=request.data)
     if serializer.is_valid():
@@ -66,7 +72,9 @@ View for both deleting,updating and retrieving a single workout.
 """
 
 
-@api_view(['GET', 'DELETE', 'PUT'])
+@api_view(['GET', 'DELETE'])
+@parser_classes([MultipartJsonParser,
+                 JSONParser])
 def detailedSuggestedWorkout(request, pk):
     detailed_suggested_workout = SuggestedWorkout.objects.get(id=pk)
     if not request.user.id:
@@ -82,12 +90,12 @@ def detailedSuggestedWorkout(request, pk):
             return Response({"messages": "You have to be a coach or athlete to perform this action."}, status=status.HTTP_401_UNAUTHORIZED)
         SuggestedWorkout.delete(detailed_suggested_workout)
         return Response({"message": "Suggested workout successfully deleted."}, status=status.HTTP_204_NO_CONTENT)
-    elif request.method == 'PUT':
-        if(request.user.id != detailed_suggested_workout.coach.id and request.user.id != detailed_suggested_workout.athlete.id):
-            return Response({"messages": "You have to be a coach or athlete to perform this action."}, status=status.HTTP_401_UNAUTHORIZED)
-        serializer = SuggestedWorkoutSerializer(
-            detailed_suggested_workout, data=request.data, context={'request': request})
-        if(serializer.is_valid()):
-            serializer.save()
-            return Response({"message": "Successfully updated the suggested workout!"}, status=status.HTTP_200_OK)
-        return Response({"message": "Something went wrong.", "error": serializer.errors}, status=HTTP_400_BAD_REQUEST)
+    # elif request.method == 'PUT':
+    #     if(request.user.id != detailed_suggested_workout.coach.id and request.user.id != detailed_suggested_workout.athlete.id):
+    #         return Response({"messages": "You have to be a coach or athlete to perform this action."}, status=status.HTTP_401_UNAUTHORIZED)
+    #     serializer = SuggestedWorkoutSerializer(data=request.data)
+    #     if(serializer.is_valid()):
+    #         serializer.update(instance=detailed_suggested_workout,
+    #                           validated_data=serializer.validated_data)
+    #         return Response({"message": "Successfully updated the suggested workout!"}, status=status.HTTP_200_OK)
+    #     return Response({"message": "Something went wrong.", "error": serializer.errors})

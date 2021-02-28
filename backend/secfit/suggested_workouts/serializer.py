@@ -71,7 +71,6 @@ def update(self, instance, validated_data):
     instance.status = validated_data.get(
         "status", instance.status)
     instance.date = validated_data.get("date", instance.date)
-    instance.save()
 
     # Handle ExerciseInstances
 
