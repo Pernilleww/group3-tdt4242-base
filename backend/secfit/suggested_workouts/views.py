@@ -99,4 +99,4 @@ def detailedSuggestedWorkout(request, pk):
             serializer.update(instance=detailed_suggested_workout,
                               validated_data=serializer.validated_data)
             return Response({"message": "Successfully updated the suggested workout!"}, status=status.HTTP_200_OK)
-        return Response({"message": "Something went wrong.", "error": serializer.errors})
+        return Response({"message": "Something went wrong.", "error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
