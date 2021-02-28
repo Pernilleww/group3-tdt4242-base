@@ -31,7 +31,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
 import json
 from collections import namedtuple
-import base64, pickle
+import base64
+import pickle
 from django.core.signing import Signer
 
 
@@ -229,7 +230,6 @@ class ExerciseInstanceList(
     generics.GenericAPIView,
 ):
     """Class defining the web response for the creation"""
-
     serializer_class = ExerciseInstanceSerializer
     permission_classes = [permissions.IsAuthenticated & IsOwnerOfWorkout]
 
@@ -247,7 +247,7 @@ class ExerciseInstanceList(
                 | (
                     (Q(workout__visibility="CO") | Q(workout__visibility="PU"))
                     & Q(workout__owner__coach=self.request.user)
-                )
+                ) | (Q(suggested_workout__coach=self.request.user) | Q(suggested_workout__athlete=self.request.user))
             ).distinct()
 
         return qs
@@ -259,14 +259,15 @@ class ExerciseInstanceDetail(
     mixins.DestroyModelMixin,
     generics.GenericAPIView,
 ):
+    queryset = ExerciseInstance.objects.all()
     serializer_class = ExerciseInstanceSerializer
-    permission_classes = [
-        permissions.IsAuthenticated
-        & (
-            IsOwnerOfWorkout
-            | (IsReadOnly & (IsCoachOfWorkoutAndVisibleToCoach | IsWorkoutPublic))
-        )
-    ]
+    # permission_classes = [
+    #    permissions.IsAuthenticated
+    #    & (
+    #       IsOwnerOfWorkout
+    # | (IsReadOnly & (IsCoachOfWorkoutAndVisibleToCoach | IsWorkoutPublic))
+    #    )
+   # ]
 
     def get(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)

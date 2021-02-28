@@ -18,11 +18,10 @@ def createSuggestedWorkouts(request):
         chosen_athlete = User.objects.get(id=chosen_athlete_id)
         if(request.user != chosen_athlete.coach):
             return Response({"message": "You can not assign the workout to someone who is not your athlete."}, status=status.HTTP_400_BAD_REQUEST)
-        new_suggested_workout = SuggestedWorkout.objects.create(
-            coach=request.user, **serializer.validated_data)
-        # Create a new Exercise instance here
-
-        # Create a new file here
+        # new_suggested_workout = SuggestedWorkout.objects.create(
+        #    coach=request.user, **serializer.validated_data)
+        serializer.create(
+            validated_data=serializer.validated_data, coach=request.user)
         return Response({"message": "Suggested workout successfully created!"}, status=status.HTTP_201_CREATED)
     return Response({"message": "Something went wrong.", "error": serializer.errors})
 
@@ -57,8 +56,8 @@ def listAllSuggestedWorkouts(request):
         suggested_workouts, many=True, context={'request': request})
     if not request.user.id:
         return Response({"message": "You have to log in to see this information."}, status=status.HTTP_401_UNAUTHORIZED)
-    elif((request.user.id,) not in list(SuggestedWorkout.objects.values_list('coach')) or (request.user.id,) not in list(SuggestedWorkout.objects.values_list('athlete'))):
-        return Response({"message": "You must either be a coach or athlete of the suggested workouts to see this information."}, status=status.HTTP_401_UNAUTHORIZED)
+    # elif((request.user.id,) not in list(SuggestedWorkout.objects.values_list('coach')) or (request.user.id,) not in list(SuggestedWorkout.objects.values_list('athlete'))):
+    #     return Response({"message": "You must either be a coach or athlete of the suggested workouts to see this information."}, status=status.HTTP_401_UNAUTHORIZED)
     return Response(data=serializer.data, status=status.HTTP_200_OK)
 
 
@@ -69,13 +68,12 @@ View for both deleting,updating and retrieving a single workout.
 
 @api_view(['GET', 'DELETE', 'PUT'])
 def detailedSuggestedWorkout(request, pk):
-    if SuggestedWorkout.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
     detailed_suggested_workout = SuggestedWorkout.objects.get(id=pk)
     if not request.user.id:
         return Response({"message": "Access denied."}, status=status.HTTP_401_UNAUTHORIZED)
     elif request.method == 'GET':
-        serializer = SuggestedWorkoutSerializer(detailed_suggested_workout)
+        serializer = SuggestedWorkoutSerializer(
+            detailed_suggested_workout, context={'request': request})
         if(request.user.id != detailed_suggested_workout.coach.id and request.user.id != detailed_suggested_workout.athlete.id):
             return Response({"messages": "You have to be a coach or athlete to see this information."}, status=status.HTTP_401_UNAUTHORIZED)
         return Response(data=serializer.data, status=status.HTTP_200_OK)
@@ -88,7 +86,7 @@ def detailedSuggestedWorkout(request, pk):
         if(request.user.id != detailed_suggested_workout.coach.id and request.user.id != detailed_suggested_workout.athlete.id):
             return Response({"messages": "You have to be a coach or athlete to perform this action."}, status=status.HTTP_401_UNAUTHORIZED)
         serializer = SuggestedWorkoutSerializer(
-            detailed_suggested_workout, data=request.data)
+            detailed_suggested_workout, data=request.data, context={'request': request})
         if(serializer.is_valid()):
             serializer.save()
             return Response({"message": "Successfully updated the suggested workout!"}, status=status.HTTP_200_OK)

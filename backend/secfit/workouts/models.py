@@ -105,7 +105,7 @@ class ExerciseInstance(models.Model):
     """
 
     workout = models.ForeignKey(
-        Workout, on_delete=models.CASCADE, related_name="exercise_instances"
+        Workout, on_delete=models.CASCADE, related_name="exercise_instances", null=True
     )
     suggested_workout = models.ForeignKey(
         SuggestedWorkout, on_delete=models.CASCADE, related_name="suggested_exercise_instances", null=True)
@@ -140,7 +140,7 @@ class WorkoutFile(models.Model):
     """
 
     workout = models.ForeignKey(
-        Workout, on_delete=models.CASCADE, related_name="files")
+        Workout, on_delete=models.CASCADE, related_name="files", null=True)
     suggested_workout = models.ForeignKey(
         SuggestedWorkout, on_delete=models.CASCADE, related_name="suggested_workout_files", null=True)
     owner = models.ForeignKey(
