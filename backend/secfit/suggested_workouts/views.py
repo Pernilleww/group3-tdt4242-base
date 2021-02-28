@@ -72,7 +72,7 @@ View for both deleting,updating and retrieving a single workout.
 """
 
 
-@api_view(['GET', 'DELETE'])
+@api_view(['GET', 'DELETE', 'PUT'])
 @parser_classes([MultipartJsonParser,
                  JSONParser])
 def detailedSuggestedWorkout(request, pk):
@@ -90,12 +90,13 @@ def detailedSuggestedWorkout(request, pk):
             return Response({"messages": "You have to be a coach or athlete to perform this action."}, status=status.HTTP_401_UNAUTHORIZED)
         SuggestedWorkout.delete(detailed_suggested_workout)
         return Response({"message": "Suggested workout successfully deleted."}, status=status.HTTP_204_NO_CONTENT)
-    # elif request.method == 'PUT':
-    #     if(request.user.id != detailed_suggested_workout.coach.id and request.user.id != detailed_suggested_workout.athlete.id):
-    #         return Response({"messages": "You have to be a coach or athlete to perform this action."}, status=status.HTTP_401_UNAUTHORIZED)
-    #     serializer = SuggestedWorkoutSerializer(data=request.data)
-    #     if(serializer.is_valid()):
-    #         serializer.update(instance=detailed_suggested_workout,
-    #                           validated_data=serializer.validated_data)
-    #         return Response({"message": "Successfully updated the suggested workout!"}, status=status.HTTP_200_OK)
-    #     return Response({"message": "Something went wrong.", "error": serializer.errors})
+    elif request.method == 'PUT':
+        if(request.user.id != detailed_suggested_workout.coach.id and request.user.id != detailed_suggested_workout.athlete.id):
+            return Response({"messages": "You have to be a coach or athlete to perform this action."}, status=status.HTTP_401_UNAUTHORIZED)
+        serializer = SuggestedWorkoutSerializer(
+            detailed_suggested_workout, data=request.data)
+        if(serializer.is_valid()):
+            serializer.update(instance=detailed_suggested_workout,
+                              validated_data=serializer.validated_data)
+            return Response({"message": "Successfully updated the suggested workout!"}, status=status.HTTP_200_OK)
+        return Response({"message": "Something went wrong.", "error": serializer.errors})
