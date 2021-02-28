@@ -41,10 +41,13 @@ class WorkoutFileSerializer(serializers.HyperlinkedModelSerializer):
     workout = HyperlinkedRelatedField(
         queryset=Workout.objects.all(), view_name="workout-detail", required=False
     )
+    suggested_workout = HyperlinkedRelatedField(
+        queryset=Workout.objects.all(), view_name="suggested-workout-detail", required=False
+    )
 
     class Meta:
         model = WorkoutFile
-        fields = ["url", "id", "owner", "file", "workout"]
+        fields = ["url", "id", "owner", "file", "workout", "suggested_workout"]
 
     def create(self, validated_data):
         return WorkoutFile.objects.create(**validated_data)

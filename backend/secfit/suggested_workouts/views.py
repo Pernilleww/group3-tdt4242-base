@@ -18,8 +18,11 @@ def createSuggestedWorkouts(request):
         chosen_athlete = User.objects.get(id=chosen_athlete_id)
         if(request.user != chosen_athlete.coach):
             return Response({"message": "You can not assign the workout to someone who is not your athlete."}, status=status.HTTP_400_BAD_REQUEST)
-        SuggestedWorkout.objects.create(
+        new_suggested_workout = SuggestedWorkout.objects.create(
             coach=request.user, **serializer.validated_data)
+        # Create a new Exercise instance here
+
+        # Create a new file here
         return Response({"message": "Suggested workout successfully created!"}, status=status.HTTP_201_CREATED)
     return Response({"message": "Something went wrong.", "error": serializer.errors})
 
