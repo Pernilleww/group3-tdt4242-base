@@ -62,3 +62,8 @@
 .link-block {
   display: block;
 }
+
+.btn-green {
+  background-color: #256d27;
+  color: #fff;
+}
