@@ -9,10 +9,11 @@ class SuggestedWorkoutSerializer(serializers.ModelSerializer):
     suggested_exercise_instances = ExerciseInstanceSerializer(
         many=True, required=False)
     suggested_workout_files = WorkoutFileSerializer(many=True, required=False)
+    coach_username = serializers.SerializerMethodField()
 
     class Meta:
         model = SuggestedWorkout
-        fields = ['id', 'athlete', 'name', 'notes', 'date',
+        fields = ['id', 'athlete', 'coach_username', 'name', 'notes', 'date',
                   'status', 'coach', 'suggested_exercise_instances', 'suggested_workout_files']
         extra_kwargs = {"coach": {"read_only": True}}
 
@@ -111,3 +112,14 @@ class SuggestedWorkoutSerializer(serializers.ModelSerializer):
                     files.all()[i].delete()
 
         return instance
+
+    def get_coach_username(self, obj):
+        """Returns the owning user's username
+
+        Args:
+            obj (Workout): Current Workout
+
+        Returns:
+            str: Username of owner
+        """
+        return obj.coach.username
