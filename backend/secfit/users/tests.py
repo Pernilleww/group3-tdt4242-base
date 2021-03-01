@@ -122,5 +122,7 @@ class UserSerializerTestCase(APITestCase):
             choice(ascii_uppercase) for i in range(60))
         serializer_with_invalid_phone_number = UserSerializer(
             data=self.serializer_data)
-        self.assertFalse(serializer_with_invalid_phone_number)
+        self.assertFalse(serializer_with_invalid_phone_number.is_valid())
+        self.assertEqual(
+            set(serializer_with_invalid_phone_number.errors.keys()), set(['phone_number']))
     # Må lage test som sjekker om coach-athlete relasjonen opprettholdes
