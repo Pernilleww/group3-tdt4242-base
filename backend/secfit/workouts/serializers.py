@@ -3,6 +3,8 @@
 from rest_framework import serializers
 from rest_framework.serializers import HyperlinkedRelatedField
 from workouts.models import Workout, Exercise, ExerciseInstance, WorkoutFile, RememberMe
+from datetime import datetime
+import pytz
 
 
 class ExerciseInstanceSerializer(serializers.HyperlinkedModelSerializer):
@@ -52,7 +54,7 @@ class WorkoutSerializer(serializers.HyperlinkedModelSerializer):
     This serializer specifies nested serialization since a workout consists of WorkoutFiles
     and ExerciseInstances.
 
-    Serialized fields: url, id, name, date, notes, owner, owner_username, visiblity,
+    Serialized fields: url, id, name, date, notes, owner, planned, owner_username, visiblity,
                        exercise_instances, files
 
     Attributes:
@@ -74,6 +76,7 @@ class WorkoutSerializer(serializers.HyperlinkedModelSerializer):
             "date",
             "notes",
             "owner",
+            "planned",
             "owner_username",
             "visibility",
             "exercise_instances",
@@ -93,6 +96,19 @@ class WorkoutSerializer(serializers.HyperlinkedModelSerializer):
         Returns:
             Workout: A newly created Workout
         """
+        # Check if date is valid
+        timeNow = datetime.now()
+        timeNowAdjusted = pytz.utc.localize(timeNow)
+
+        if validated_data["planned"]:
+            if timeNowAdjusted >= validated_data["date"]:
+                raise serializers.ValidationError(
+                    {"date": ["Date must be a future date"]})
+        else:
+            if timeNowAdjusted <= validated_data["date"]:
+                raise serializers.ValidationError(
+                    {"date": ["Date must be an old date"]})
+
         exercise_instances_data = validated_data.pop("exercise_instances")
         files_data = []
         if "files" in validated_data:
@@ -101,10 +117,12 @@ class WorkoutSerializer(serializers.HyperlinkedModelSerializer):
         workout = Workout.objects.create(**validated_data)
 
         for exercise_instance_data in exercise_instances_data:
-            ExerciseInstance.objects.create(workout=workout, **exercise_instance_data)
+            ExerciseInstance.objects.create(
+                workout=workout, **exercise_instance_data)
         for file_data in files_data:
             WorkoutFile.objects.create(
-                workout=workout, owner=workout.owner, file=file_data.get("file")
+                workout=workout, owner=workout.owner, file=file_data.get(
+                    "file")
             )
 
         return workout
@@ -122,12 +140,27 @@ class WorkoutSerializer(serializers.HyperlinkedModelSerializer):
         Returns:
             Workout: Updated Workout instance
         """
+        # Add date and planned check
+        # Check if date is valid
+        timeNow = datetime.now()
+        timeNowAdjusted = pytz.utc.localize(timeNow)
+
+        if validated_data["planned"]:
+            if timeNowAdjusted >= validated_data["date"]:
+                raise serializers.ValidationError(
+                    {"date": ["Date must be a future date"]})
+        else:
+            if timeNowAdjusted <= validated_data["date"]:
+                raise serializers.ValidationError(
+                    {"date": ["Date must be an old date"]})
+
         exercise_instances_data = validated_data.pop("exercise_instances")
         exercise_instances = instance.exercise_instances
 
         instance.name = validated_data.get("name", instance.name)
         instance.notes = validated_data.get("notes", instance.notes)
-        instance.visibility = validated_data.get("visibility", instance.visibility)
+        instance.visibility = validated_data.get(
+            "visibility", instance.visibility)
         instance.date = validated_data.get("date", instance.date)
         instance.save()
 

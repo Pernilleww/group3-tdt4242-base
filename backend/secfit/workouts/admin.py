@@ -9,3 +9,4 @@ admin.site.register(Exercise)
 admin.site.register(ExerciseInstance)
 admin.site.register(Workout)
 admin.site.register(WorkoutFile)
+

@@ -38,6 +38,7 @@ class Workout(models.Model):
         notes:       Notes about the workout
         owner:       User that logged the workout
         visibility:  The visibility level of the workout: Public, Coach, or Private
+        planned:     Indicates if it is a planned workout
     """
 
     name = models.CharField(max_length=100)
@@ -46,6 +47,7 @@ class Workout(models.Model):
     owner = models.ForeignKey(
         get_user_model(), on_delete=models.CASCADE, related_name="workouts"
     )
+    planned = models.BooleanField(default=False)
 
     # Visibility levels
     PUBLIC = "PU"  # Visible to all authenticated users
@@ -66,7 +68,6 @@ class Workout(models.Model):
 
     def __str__(self):
         return self.name
-
 
 class Exercise(models.Model):
     """Django model for an exercise type that users can create.

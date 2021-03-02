@@ -31,8 +31,11 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
 import json
 from collections import namedtuple
-import base64, pickle
+import base64
+import pickle
 from django.core.signing import Signer
+from datetime import datetime
+import pytz
 
 
 @api_view(["GET"])
@@ -141,6 +144,16 @@ class WorkoutList(
                 Q(visibility="PU")
                 | (Q(visibility="CO") & Q(owner__coach=self.request.user))
             ).distinct()
+            # Check if the planned workout has happened
+            if len(qs) > 0:
+                timeNow = datetime.now()
+                timeNowAdjusted = pytz.utc.localize(timeNow)
+                for i in range(0, len(qs)):
+                    if qs[i].planned:
+                        if timeNowAdjusted > qs[i].date:
+                            # Update: set planned to false
+                            qs[i].planned = False
+                            qs[i].save()
 
         return qs
 
@@ -155,7 +168,6 @@ class WorkoutDetail(
 
     HTTP methods: GET, PUT, DELETE
     """
-
     queryset = Workout.objects.all()
     serializer_class = WorkoutSerializer
     permission_classes = [

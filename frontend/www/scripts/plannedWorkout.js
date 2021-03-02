@@ -2,9 +2,7 @@ let cancelWorkoutButton;
 let okWorkoutButton;
 let deleteWorkoutButton;
 let editWorkoutButton;
-let exportWorkoutButton;
 let postCommentButton;
-let planned = false;
 
 async function retrieveWorkout(id) {
   let workoutData = null;
@@ -17,7 +15,7 @@ async function retrieveWorkout(id) {
     workoutData = await response.json();
     let form = document.querySelector("#form-workout");
     let formData = new FormData(form);
-    planned = workoutData.planned;
+
     for (let key of formData.keys()) {
       let selector = `input[name="${key}"], textarea[name="${key}"]`;
       let input = form.querySelector(selector);
@@ -133,7 +131,6 @@ function handleEditWorkoutButtonClick() {
   document.querySelector("#inputOwner").readOnly = true; // owner field should still be readonly
 
   editWorkoutButton.className += " hide";
-  exportWorkoutButton.className += " hide";
   okWorkoutButton.className = okWorkoutButton.className.replace(" hide", "");
   cancelWorkoutButton.className = cancelWorkoutButton.className.replace(
     " hide",
@@ -155,91 +152,6 @@ function handleEditWorkoutButtonClick() {
   cancelWorkoutButton.addEventListener("click", handleCancelDuringWorkoutEdit);
 }
 
-//Taken from github: https://gist.github.com/dannypule/48418b4cd8223104c6c92e3016fc0f61
-function handleExportToCalendarClick(workoutData) {
-  const headers = {
-    subject: "Subject",
-    startDate: "Start date",
-    startTime: "Start time",
-    description: "Description",
-  };
-
-  const dataFormatted = [];
-
-  const startTime = new Date(workoutData.date).toLocaleTimeString("en-us");
-  const startDate = new Date(workoutData.date)
-    .toLocaleString("en-us", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    })
-    .replace(/(\d+)\/(\d+)\/(\d+)/, "$1/$2/$3");
-
-  dataFormatted.push({
-    subject: workoutData.name,
-    startDate: startDate,
-    startTime: startTime,
-    description: workoutData.notes,
-  });
-
-  console.log(dataFormatted);
-
-  exportCSVFile(headers, dataFormatted, "event");
-}
-
-//Taken from github: https://gist.github.com/dannypule/48418b4cd8223104c6c92e3016fc0f61
-function convertToCSV(objArray) {
-  var array = typeof objArray != "object" ? JSON.parse(objArray) : objArray;
-  var str = "";
-
-  for (var i = 0; i < array.length; i++) {
-    var line = "";
-    for (var index in array[i]) {
-      if (line != "") line += ",";
-
-      line += array[i][index];
-    }
-
-    str += line + "\r\n";
-  }
-
-  return str;
-}
-
-//Taken from github: https://gist.github.com/dannypule/48418b4cd8223104c6c92e3016fc0f61
-function exportCSVFile(headers, items, fileTitle) {
-  console.log(items, headers);
-  if (headers) {
-    items.unshift(headers);
-  }
-
-  // Convert Object to JSON
-  var jsonObject = JSON.stringify(items);
-
-  var csv = this.convertToCSV(jsonObject);
-
-  var exportedFilenmae = fileTitle + ".csv" || "export.csv";
-
-  var blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-  if (navigator.msSaveBlob) {
-    // IE 10+
-    navigator.msSaveBlob(blob, exportedFilenmae);
-  } else {
-    var link = document.createElement("a");
-    if (link.download !== undefined) {
-      // feature detection
-      // Browsers that support HTML5 download attribute
-      var url = URL.createObjectURL(blob);
-      link.setAttribute("href", url);
-      link.setAttribute("download", exportedFilenmae);
-      link.style.visibility = "hidden";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-  }
-}
-
 async function deleteWorkout(id) {
   let response = await sendRequest("DELETE", `${HOST}/api/workouts/${id}/`);
   if (!response.ok) {
@@ -253,6 +165,7 @@ async function deleteWorkout(id) {
 
 async function updateWorkout(id) {
   let submitForm = generateWorkoutForm();
+
   let response = await sendRequest(
     "PUT",
     `${HOST}/api/workouts/${id}/`,
@@ -269,6 +182,7 @@ async function updateWorkout(id) {
 }
 
 function generateWorkoutForm() {
+  // TODO: Add check for future date
   var today = new Date().toISOString();
 
   document.querySelector("#inputDateTime").min = today;
@@ -283,8 +197,7 @@ function generateWorkoutForm() {
   submitForm.append("date", date);
   submitForm.append("notes", formData.get("notes"));
   submitForm.append("visibility", formData.get("visibility"));
-
-  submitForm.append("planned", planned);
+  submitForm.append("planned", true);
 
   // adding exercise instances
   let exerciseInstances = [];
@@ -446,7 +359,6 @@ window.addEventListener("DOMContentLoaded", async () => {
   okWorkoutButton = document.querySelector("#btn-ok-workout");
   deleteWorkoutButton = document.querySelector("#btn-delete-workout");
   editWorkoutButton = document.querySelector("#btn-edit-workout");
-  exportWorkoutButton = document.querySelector("#btn-export-workout");
   let postCommentButton = document.querySelector("#post-comment");
   let divCommentRow = document.querySelector("#div-comment-row");
   let buttonAddExercise = document.querySelector("#btn-add-exercise");
@@ -465,15 +377,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 
     if (workoutData["owner"] == currentUser.url) {
       editWorkoutButton.classList.remove("hide");
-      exportWorkoutButton.classList.remove("hide");
       editWorkoutButton.addEventListener("click", handleEditWorkoutButtonClick);
-      exportWorkoutButton.addEventListener(
-        "click",
-        ((workoutData) => handleExportToCalendarClick(workoutData)).bind(
-          undefined,
-          workoutData
-        )
-      );
       deleteWorkoutButton.addEventListener(
         "click",
         (async (id) => await deleteWorkout(id)).bind(undefined, id)
