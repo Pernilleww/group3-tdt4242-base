@@ -8,8 +8,10 @@ from django.urls import reverse
 from django.db import models
 from django.contrib.auth import get_user_model
 from workouts.models import Workout
-
+from django.utils import timezone
 # Create your models here.
+
+
 class Comment(models.Model):
     """Django model for a comment left on a workout.
 
@@ -26,7 +28,7 @@ class Comment(models.Model):
         Workout, on_delete=models.CASCADE, related_name="comments"
     )
     content = models.TextField()
-    timestamp = models.DateTimeField(auto_now_add=True)
+    timestamp = models.DateTimeField(default=timezone.now)
 
     class Meta:
         ordering = ["-timestamp"]
@@ -44,5 +46,6 @@ class Like(models.Model):
     owner = models.ForeignKey(
         get_user_model(), on_delete=models.CASCADE, related_name="likes"
     )
-    comment = models.ForeignKey(Comment, on_delete=models.CASCADE, related_name="likes")
-    timestamp = models.DateTimeField(auto_now_add=True)
+    comment = models.ForeignKey(
+        Comment, on_delete=models.CASCADE, related_name="likes")
+    timestamp = models.DateTimeField(default=timezone.now)

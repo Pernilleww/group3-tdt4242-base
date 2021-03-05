@@ -41,8 +41,53 @@ async function fetchWorkouts(ordering) {
   }
 }
 
+async function fetchSuggestedWorkouts() {
+    let responseSuggestAthlete = await sendRequest("GET", `${HOST}/api/suggested-workouts/athlete-list/`);
+    let responseSuggestCoach = await sendRequest("GET", `${HOST}/api/suggested-workouts/coach-list/`);
+
+    if (!responseSuggestCoach || !responseSuggestAthlete) {
+        throw new Error(`HTTP error! status: ${responseSuggestAthlete.status || responseSuggestCoach.status}`);
+    } else {
+        let suggestWorkoutAthlete = await responseSuggestAthlete.json();
+        let suggestWorkoutCoach = await responseSuggestCoach.json();
+
+        let suggestedWorkouts = suggestWorkoutAthlete.concat(suggestWorkoutCoach);
+        let container = document.getElementById('div-content');
+
+        suggestedWorkouts.forEach(workout => {
+            let templateWorkout = document.querySelector("#template-suggested-workout");
+            let cloneWorkout = templateWorkout.content.cloneNode(true);
+
+            let aWorkout = cloneWorkout.querySelector("a");
+            aWorkout.href = `suggestworkout.html?id=${workout.id}`;
+
+            let h5 = aWorkout.querySelector("h5");
+            h5.textContent = workout.name;
+
+            //let localDate = new Date(workout.date);
+
+            let table = aWorkout.querySelector("table");
+            let rows = table.querySelectorAll("tr");
+            rows[0].querySelectorAll("td")[1].textContent = workout.coach_username; //Owner
+            rows[1].querySelectorAll("td")[1].textContent = workout.suggested_exercise_instances.length; // Exercises
+            rows[2].querySelectorAll("td")[1].textContent = workout.status === "p" ? "Pending" : "Accept"; // Exercises
+
+
+            container.appendChild(aWorkout);
+        });
+
+        return [suggestWorkoutAthlete, suggestWorkoutCoach];
+    }
+
+}
+
+
 function createWorkout() {
   window.location.replace("workout.html");
+}
+
+function suggestWorkout() {
+    window.location.replace("suggestworkout.html");
 }
 
 function planWorkout() {
@@ -51,8 +96,9 @@ function planWorkout() {
 
 window.addEventListener("DOMContentLoaded", async () => {
   let createButton = document.querySelector("#btn-create-workout");
-  createButton.addEventListener("click", createWorkout);
-
+  let suggestButton = document.querySelector("#btn-suggest-workout");
+    suggestButton.addEventListener("click", suggestWorkout);
+    createButton.addEventListener("click", createWorkout);
   let planButton = document.querySelector("#btn-plan-workout");
   planButton.addEventListener("click", planWorkout);
   let ordering = "-date";
@@ -61,11 +107,11 @@ window.addEventListener("DOMContentLoaded", async () => {
   if (urlParams.has("ordering")) {
     let aSort = null;
     ordering = urlParams.get("ordering");
-    if (ordering == "name" || ordering == "owner" || ordering == "date") {
-      let aSort = document.querySelector(`a[href="?ordering=${ordering}"`);
-      aSort.href = `?ordering=-${ordering}`;
+        if (ordering == "name" || ordering == "owner" || ordering == "date") {
+            let aSort = document.querySelector(`a[href="?ordering=${ordering}"`);
+            aSort.href = `?ordering=-${ordering}`;
+        }
     }
-  }
 
   let currentSort = document.querySelector("#current-sort");
   currentSort.innerHTML =
@@ -79,17 +125,20 @@ window.addEventListener("DOMContentLoaded", async () => {
     ordering += "__username";
   }
   let workouts = await fetchWorkouts(ordering);
+let [athleteWorkout, coachWorkout] = await fetchSuggestedWorkouts();
 
-  let tabEls = document.querySelectorAll('a[data-bs-toggle="list"]');
-  for (let i = 0; i < tabEls.length; i++) {
-    let tabEl = tabEls[i];
-    tabEl.addEventListener("show.bs.tab", function (event) {
+    let allWorkouts = workouts.concat(athleteWorkout, coachWorkout);
+
+    let tabEls = document.querySelectorAll('a[data-bs-toggle="list"]');
+    for (let i = 0; i < tabEls.length; i++) {
+        let tabEl = tabEls[i];
+        tabEl.addEventListener("show.bs.tab", function (event) {
       let workoutAnchors = document.querySelectorAll(".workout");
-      for (let j = 0; j < workouts.length; j++) {
+      for (let j = 0; j < allWorkouts.length; j++) {
         // I'm assuming that the order of workout objects matches
         // the other of the workout anchor elements. They should, given
         // that I just created them.
-        let workout = workouts[j];
+        let workout = allWorkouts[j];
         let workoutAnchor = workoutAnchors[j];
 
         switch (event.currentTarget.id) {
@@ -136,8 +185,33 @@ window.addEventListener("DOMContentLoaded", async () => {
               workoutAnchor.classList.add("hide");
             }
             break;
-          default:
-            workoutAnchor.classList.remove("hide");
+          case "list-suggested-coach-workouts-list":
+                        if (currentUser.coach) {
+                            let coachID = currentUser?.coach?.split('/');
+                            if (coachID[coachID.length - 2] == workout.coach) {
+                                workoutAnchor.classList.remove('hide');
+
+                            }
+                        } else {
+                            workoutAnchor.classList.add('hide');
+                        }
+                        break;
+                    case "list-suggested-athlete-workouts-list":
+                        let athletes = currentUser?.athletes?.map((athlete) => {
+                            let athleteIdSplit = athlete.split('/');
+                            return Number(athleteIdSplit[athleteIdSplit.length - 2]);
+
+                        })
+                        if (athletes.includes(workout.athlete)) {
+                            console.log("hei")
+                            workoutAnchor.classList.remove('hide');
+                        } else {
+                            workoutAnchor.classList.add('hide');
+                        }
+                        break;
+
+                    default :
+                        workoutAnchor.classList.remove("hide");
             break;
         }
       }

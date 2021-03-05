@@ -7,6 +7,7 @@ from django.db import models
 from django.core.files.storage import FileSystemStorage
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from suggested_workouts.models import SuggestedWorkout
 
 
 class OverwriteStorage(FileSystemStorage):
@@ -95,6 +96,8 @@ class ExerciseInstance(models.Model):
     Kyle's workout on 15.06.2029 had one exercise instance: 3 (sets) reps (unit) of
     10 (number) pushups (exercise type)
 
+    Each suggested workouts shall also have a relation with one or more exercise instances just like a regular workout.
+
     Attributes:
         workout:    The workout associated with this exercise instance
         exercise:   The exercise type of this instance
@@ -103,8 +106,10 @@ class ExerciseInstance(models.Model):
     """
 
     workout = models.ForeignKey(
-        Workout, on_delete=models.CASCADE, related_name="exercise_instances"
+        Workout, on_delete=models.CASCADE, related_name="exercise_instances", null=True
     )
+    suggested_workout = models.ForeignKey(
+        SuggestedWorkout, on_delete=models.CASCADE, related_name="suggested_exercise_instances", null=True, blank=True)
     exercise = models.ForeignKey(
         Exercise, on_delete=models.CASCADE, related_name="instances"
     )
@@ -122,21 +127,29 @@ def workout_directory_path(instance, filename):
     Returns:
         str: Path where workout file is stored
     """
-    return f"workouts/{instance.workout.id}/{filename}"
+    if instance.workout != None:
+        return f"workouts/{instance.workout.id}/{filename}"
+    elif instance.suggested_workout != None:
+        return f"suggested_workouts/{instance.suggested_workout.id}/{filename}"
+    return f"images"
 
 
 class WorkoutFile(models.Model):
-    """Django model for file associated with a workout. Basically a wrapper.
+    """Django model for file associated with a workout or a suggested workout. Basically a wrapper.
 
     Attributes:
         workout: The workout for which this file has been uploaded
+        suggested_workout: The suggested workout for which the file has been uploaded
         owner:   The user who uploaded the file
         file:    The actual file that's being uploaded
     """
 
-    workout = models.ForeignKey(Workout, on_delete=models.CASCADE, related_name="files")
+    workout = models.ForeignKey(
+        Workout, on_delete=models.CASCADE, related_name="files", null=True, blank=True)
+    suggested_workout = models.ForeignKey(
+        SuggestedWorkout, on_delete=models.CASCADE, related_name="suggested_workout_files", null=True, blank=True)
     owner = models.ForeignKey(
-        get_user_model(), on_delete=models.CASCADE, related_name="workout_files"
+        get_user_model(), on_delete=models.CASCADE, related_name="workout_files", null=True, blank=True
     )
     file = models.FileField(upload_to=workout_directory_path)
 

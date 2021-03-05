@@ -15,6 +15,8 @@ import os
 
 
 # Get the GROUPID variable to accept connections from the application server and NGINX
+from .django_heroku import settings
+
 groupid = os.environ.get("GROUPID", "0")
 
 # Email configuration
@@ -59,7 +61,9 @@ INSTALLED_APPS = [
     "workouts.apps.WorkoutsConfig",
     "users.apps.UsersConfig",
     "comments.apps.CommentsConfig",
+    "suggested_workouts.apps.SuggestedWorkoutsConfig",
     "corsheaders",
+
 ]
 
 MIDDLEWARE = [
@@ -139,9 +143,12 @@ REST_FRAMEWORK = {
     "PAGE_SIZE": 10,
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
+        'rest_framework.authentication.SessionAuthentication',
     ),
 }
 
 AUTH_USER_MODEL = "users.User"
 
 DEBUG = True
+
+settings(locals())
