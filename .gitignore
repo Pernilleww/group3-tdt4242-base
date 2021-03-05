@@ -7,3 +7,4 @@ backend/secfit/db.sqlite3
 venv/
 .vscode/ 
 .DS_store
+.migrations/

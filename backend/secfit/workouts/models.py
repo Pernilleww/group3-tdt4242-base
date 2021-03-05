@@ -70,6 +70,7 @@ class Workout(models.Model):
     def __str__(self):
         return self.name
 
+
 class Exercise(models.Model):
     """Django model for an exercise type that users can create.
 
@@ -106,7 +107,7 @@ class ExerciseInstance(models.Model):
     """
 
     workout = models.ForeignKey(
-        Workout, on_delete=models.CASCADE, related_name="exercise_instances", null=True
+        Workout, on_delete=models.CASCADE, related_name="exercise_instances", null=True, blank=True
     )
     suggested_workout = models.ForeignKey(
         SuggestedWorkout, on_delete=models.CASCADE, related_name="suggested_exercise_instances", null=True, blank=True)
