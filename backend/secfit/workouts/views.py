@@ -11,7 +11,7 @@ from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from django.db.models import Q
 from rest_framework import filters
-from workouts.parsers import MultipartJsonParser
+from workouts.parsers import MultipartJsonParserWorkout
 from workouts.permissions import (
     IsOwner,
     IsCoachAndVisibleToCoach,
@@ -31,8 +31,11 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
 import json
 from collections import namedtuple
-import base64, pickle
+import base64
+import pickle
 from django.core.signing import Signer
+from datetime import datetime
+import pytz
 
 
 @api_view(["GET"])
@@ -115,7 +118,7 @@ class WorkoutList(
         permissions.IsAuthenticated
     ]  # User must be authenticated to create/view workouts
     parser_classes = [
-        MultipartJsonParser,
+        MultipartJsonParserWorkout,
         JSONParser,
     ]  # For parsing JSON and Multi-part requests
     filter_backends = [filters.OrderingFilter]
@@ -141,6 +144,16 @@ class WorkoutList(
                 Q(visibility="PU")
                 | (Q(visibility="CO") & Q(owner__coach=self.request.user))
             ).distinct()
+            # Check if the planned workout has happened
+            if len(qs) > 0:
+                timeNow = datetime.now()
+                timeNowAdjusted = pytz.utc.localize(timeNow)
+                for i in range(0, len(qs)):
+                    if qs[i].planned:
+                        if timeNowAdjusted > qs[i].date:
+                            # Update: set planned to false
+                            qs[i].planned = False
+                            qs[i].save()
 
         return qs
 
@@ -155,14 +168,13 @@ class WorkoutDetail(
 
     HTTP methods: GET, PUT, DELETE
     """
-
     queryset = Workout.objects.all()
     serializer_class = WorkoutSerializer
     permission_classes = [
         permissions.IsAuthenticated
         & (IsOwner | (IsReadOnly & (IsCoachAndVisibleToCoach | IsPublic)))
     ]
-    parser_classes = [MultipartJsonParser, JSONParser]
+    parser_classes = [MultipartJsonParserWorkout, JSONParser]
 
     def get(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
@@ -229,7 +241,6 @@ class ExerciseInstanceList(
     generics.GenericAPIView,
 ):
     """Class defining the web response for the creation"""
-
     serializer_class = ExerciseInstanceSerializer
     permission_classes = [permissions.IsAuthenticated & IsOwnerOfWorkout]
 
@@ -247,7 +258,7 @@ class ExerciseInstanceList(
                 | (
                     (Q(workout__visibility="CO") | Q(workout__visibility="PU"))
                     & Q(workout__owner__coach=self.request.user)
-                )
+                ) | (Q(suggested_workout__coach=self.request.user) | Q(suggested_workout__athlete=self.request.user))
             ).distinct()
 
         return qs
@@ -259,14 +270,15 @@ class ExerciseInstanceDetail(
     mixins.DestroyModelMixin,
     generics.GenericAPIView,
 ):
+    queryset = ExerciseInstance.objects.all()
     serializer_class = ExerciseInstanceSerializer
-    permission_classes = [
-        permissions.IsAuthenticated
-        & (
-            IsOwnerOfWorkout
-            | (IsReadOnly & (IsCoachOfWorkoutAndVisibleToCoach | IsWorkoutPublic))
-        )
-    ]
+    # permission_classes = [
+    #    permissions.IsAuthenticated
+    #    & (
+    #       IsOwnerOfWorkout
+    # | (IsReadOnly & (IsCoachOfWorkoutAndVisibleToCoach | IsWorkoutPublic))
+    #    )
+   # ]
 
     def get(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
@@ -291,7 +303,7 @@ class WorkoutFileList(
     queryset = WorkoutFile.objects.all()
     serializer_class = WorkoutFileSerializer
     permission_classes = [permissions.IsAuthenticated & IsOwnerOfWorkout]
-    parser_classes = [MultipartJsonParser, JSONParser]
+    parser_classes = [MultipartJsonParserWorkout, JSONParser]
 
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
