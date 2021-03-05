@@ -1,27 +1,31 @@
 variables:
-  HEROKU_APP_NAME: tdt4242-base
-  HEROKU_REGISTRY_IMAGE: registry.heroku.com/${HEROKU_APP_NAME}/web
+  HEROKU_APP_NAME_BACKEND: tdt4242-base
+  HEROKU_APP_NAME_FRONTEND: tdt4242-base-secfit
 
 stages:
-  - test
+#  - test
   - deploy
 
-test:
-  image: python:3
-  stage: test
-  script:
+#test:
+#  image: python:3
+#  stage: test
+#  script:
   # this configures Django application to use attached postgres database that is run on `postgres` host
-    - cd backend/secfit
-    - apt-get update -qy
-    - pip install -r requirements.txt
-    - python manage.py test
+#    - cd backend/secfit
+#    - apt-get update -qy
+#    - pip install -r requirements.txt
+#    - python manage.py test
 
 deploy:
+  image: ruby
   stage: deploy
-  variables:
-    HEROKU_APP_NAME: tdt4242-base
+  type: deploy
   script:
     - apt-get update -qy
-    - apt-get install -y ruby-dev
+    - apt-get install -y ruby ruby-dev
     - gem install dpl
-    - dpl --provider=heroku --app=$HEROKU_APP_NAME --api-key=$HEROKU_AUTH_TOKEN
+    - dpl --provider=heroku --app=$HEROKU_APP_NAME_BACKEND --api-key=$HEROKU_AUTH_TOKEN
+    - dpl --provider=heroku --app=$HEROKU_APP_NAME_FRONTEND --api-key=$HEROKU_AUTH_TOKEN
+
+    
+

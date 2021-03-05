@@ -5,6 +5,7 @@ from rest_framework.serializers import HyperlinkedRelatedField
 from workouts.models import Workout, Exercise, ExerciseInstance, WorkoutFile, RememberMe
 from datetime import datetime
 import pytz
+from suggested_workouts.models import SuggestedWorkout
 
 
 class ExerciseInstanceSerializer(serializers.HyperlinkedModelSerializer):
@@ -19,10 +20,13 @@ class ExerciseInstanceSerializer(serializers.HyperlinkedModelSerializer):
     workout = HyperlinkedRelatedField(
         queryset=Workout.objects.all(), view_name="workout-detail", required=False
     )
+    suggested_workout = HyperlinkedRelatedField(queryset=SuggestedWorkout.objects.all(
+    ), view_name="suggested-workout-detail", required=False)
 
     class Meta:
         model = ExerciseInstance
-        fields = ["url", "id", "exercise", "sets", "number", "workout"]
+        fields = ["url", "id", "exercise", "sets",
+                  "number", "workout", "suggested_workout"]
 
 
 class WorkoutFileSerializer(serializers.HyperlinkedModelSerializer):
@@ -39,10 +43,13 @@ class WorkoutFileSerializer(serializers.HyperlinkedModelSerializer):
     workout = HyperlinkedRelatedField(
         queryset=Workout.objects.all(), view_name="workout-detail", required=False
     )
+    suggested_workout = HyperlinkedRelatedField(
+        queryset=SuggestedWorkout.objects.all(), view_name="suggested-workout-detail", required=False
+    )
 
     class Meta:
         model = WorkoutFile
-        fields = ["url", "id", "owner", "file", "workout"]
+        fields = ["url", "id", "owner", "file", "workout", "suggested_workout"]
 
     def create(self, validated_data):
         return WorkoutFile.objects.create(**validated_data)
@@ -200,9 +207,10 @@ class WorkoutSerializer(serializers.HyperlinkedModelSerializer):
         if "files" in validated_data:
             files_data = validated_data.pop("files")
             files = instance.files
-
             for file, file_data in zip(files.all(), files_data):
+
                 file.file = file_data.get("file", file.file)
+                file.save()
 
             # If new files have been added, creating new WorkoutFiles
             if len(files_data) > len(files.all()):
