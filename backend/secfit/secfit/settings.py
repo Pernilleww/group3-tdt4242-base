@@ -46,7 +46,7 @@ ALLOWED_HOSTS = [
     "molde.idi.ntnu.no",
     "10.0.2.2",
     "tdt4242-base.herokuapp.com",
-    "tdt4242-base.-secfitherokuapp.com"
+    "tdt4242-base-secfit.herokuapp.com"
 ]
 
 # Application definition
