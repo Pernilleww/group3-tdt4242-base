@@ -9,6 +9,7 @@ django-cleanup==5.0.0
 django-cors-headers==3.4.0
 djangorestframework==3.11.1
 djangorestframework-simplejwt==4.6.0
+django-heroku
 gunicorn==20.0.4
 httpie==2.2.0
 idna==2.10
