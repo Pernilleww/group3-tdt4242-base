@@ -6,15 +6,15 @@ stages:
 #  - test
   - deploy
 
-#test:
-#  image: python:3
-#  stage: test
-#  script:
+test:
+  image: python:3
+  stage: test
+  script:
   # this configures Django application to use attached postgres database that is run on `postgres` host
-#    - cd backend/secfit
-#    - apt-get update -qy
-#    - pip install -r requirements.txt
-#    - python manage.py test
+    - cd backend/secfit
+    - apt-get update -qy
+    - pip install -r requirements.txt
+   - python manage.py test
 
 deploy:
   image: ruby
