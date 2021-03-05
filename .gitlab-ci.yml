@@ -3,7 +3,7 @@ variables:
   HEROKU_APP_NAME_FRONTEND: tdt4242-base-secfit
 
 stages:
-#  - test
+  - test
   - deploy
 
 test:
