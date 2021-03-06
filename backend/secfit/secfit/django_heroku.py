@@ -7,7 +7,7 @@ from django.test.runner import DiscoverRunner
 MAX_CONN_AGE = 600
 
 
-def settings(config, *, db_colors=False, databases=True, test_runner=True, staticfiles=True, allowed_hosts=True,
+def settings(config, *, db_colors=False, databases=True, test_runner=False, staticfiles=True, allowed_hosts=True,
              logging=True, secret_key=True):
     # Database configuration.
     # TODO: support other database (e.g. TEAL, AMBER, etc, automatically.)
