@@ -66,7 +66,7 @@ INSTALLED_APPS = [
     "corsheaders",
     'django_nose',
 ]
-TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+#TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 NOSE_ARGS = [
     '--with-coverage',
     '--cover-package=users.serializers,workouts.permissions',
@@ -152,7 +152,11 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
     ),
 }
-
+AUTH_PASSWORD_VALIDATORS = [{
+    'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+            'OPTIONS': {
+                'min_length': 9,
+            }}]
 AUTH_USER_MODEL = "users.User"
 
 DEBUG = True
