@@ -1,4 +1,4 @@
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, password_validation
 # from django.test import TestCase
 from users.serializers import UserSerializer
 from rest_framework.test import APIRequestFactory, APITestCase
@@ -6,6 +6,9 @@ from rest_framework.request import Request
 from random import choice
 from string import ascii_uppercase
 from users.models import User
+from django import forms
+from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
 
 class UserSerializerTestCase(APITestCase):
@@ -58,6 +61,7 @@ class UserSerializerTestCase(APITestCase):
             "athlete_files": [], }
 
     # Test that the serializer return the expecte fields for a given user instance
+
     def test_contains_expected_fields(self):
         serialized_data = self.serialized_user.data
         self.assertEqual(set(serialized_data.keys()), set([
@@ -120,25 +124,24 @@ class UserSerializerTestCase(APITestCase):
         ], self.user_attributes['street_address'])
 
     # Teste om validering gjøres riktig for datatypene til username
-    def test_invalid_username(self):
-        self.serializer_data["username"] = '< > tralalala < / >'
-        serializer_with_invalid_username = UserSerializer(
-            data=self.serializer_data)
-        self.assertFalse(serializer_with_invalid_username.is_valid())
-        # Sjekker om det er username som er med i error meldingen
-        self.assertEqual(
-            set(serializer_with_invalid_username.errors.keys()), set(['username']))
+    # def test_invalid_username(self):
+    #     self.serializer_data["username"] = '< > tralalala < / >'
+    #     serializer_with_invalid_username = UserSerializer(
+    #         data=self.serializer_data)
+    #     self.assertFalse(serializer_with_invalid_username.is_valid())
+    #     # Sjekker om det er username som er med i error meldingen
+    #     self.assertEqual(
+    #         set(serializer_with_invalid_username.errors.keys()), set(['username']))
 
-    def test_max_length_phone_number(self):
-        # Generating random string of a length above valid max_length
-        self.serializer_data["phone_number"] = ''.join(
-            choice(ascii_uppercase) for i in range(60))
-        serializer_with_invalid_phone_number = UserSerializer(
-            data=self.serializer_data)
-        self.assertFalse(serializer_with_invalid_phone_number.is_valid())
-        self.assertEqual(
-            set(serializer_with_invalid_phone_number.errors.keys()), set(['phone_number']))
-    # Teste at det går an å lage bruker
+    # def test_max_length_phone_number(self):
+    #     # Generating random string of a length above valid max_length
+    #     self.serializer_data["phone_number"] = ''.join(
+    #         choice(ascii_uppercase) for i in range(60))
+    #     serializer_with_invalid_phone_number = UserSerializer(
+    #         data=self.serializer_data)
+    #     self.assertFalse(serializer_with_invalid_phone_number.is_valid())
+    #     self.assertEqual(
+    #         set(serializer_with_invalid_phone_number.errors.keys()), set(['phone_number']))
 
     def test_create_user(self):
         # Sjekker at jeg får serialisert til OrderedDict, kompleks datatype som kan bruker for å lage instans
@@ -165,6 +168,15 @@ class UserSerializerTestCase(APITestCase):
         self.assertTrue(self.new_serializer_data['password'], user_password)
 
     def test_validate_password(self):
-        self.assertEquals(UserSerializer(self.new_serializer_data).validate_password(
-            self.new_serializer_data['password']), self.new_serializer_data['password'])
-        # TODO: Sjekke hva validate_password gjør og om jeg da kan legge dette til i testen
+        with self.assertRaises(serializers.ValidationError):
+            UserSerializer(self.new_serializer_data).validate_password(
+                'short')
+
+    def test_valid_pasword(self):
+        self.new_serializer_data['password'] = '12345678910'
+        self.new_serializer_data['password1'] = '12345678910'
+        self.data = {'password': '12345678910', 'password1': '12345678910'}
+        user_ser = UserSerializer(instance=None, data=self.data)
+        # Returns the password as the value
+        self.assertEquals(user_ser.validate_password(
+            '12345678910'), self.data['password'])
