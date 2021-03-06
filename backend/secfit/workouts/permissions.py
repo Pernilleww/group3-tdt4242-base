@@ -33,9 +33,10 @@ class IsCoachAndVisibleToCoach(permissions.BasePermission):
     """Checks whether the requesting user is the existing object's owner's coach
     and whether the object (workout) has a visibility of Public or Coach.
     """
+    # Fixed bug where the function did not check for the visibility level
 
     def has_object_permission(self, request, view, obj):
-        return obj.owner.coach == request.user
+        return obj.owner.coach == request.user and (obj.visibility == 'PU' or obj.visibility == 'CO')
 
 
 class IsCoachOfWorkoutAndVisibleToCoach(permissions.BasePermission):
@@ -44,7 +45,10 @@ class IsCoachOfWorkoutAndVisibleToCoach(permissions.BasePermission):
     """
 
     def has_object_permission(self, request, view, obj):
-        return obj.workout.owner.coach == request.user
+        # Fixed bug where the function did not check for the visibility level
+        return obj.workout.owner.coach == request.user and (
+            obj.workout.visibility == "PU" or obj.workout.visibility == "CO"
+        )
 
 
 class IsPublic(permissions.BasePermission):

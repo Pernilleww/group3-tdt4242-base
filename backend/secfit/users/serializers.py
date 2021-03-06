@@ -5,8 +5,10 @@ from django import forms
 
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
-    password = serializers.CharField(style={"input_type": "password"}, write_only=True)
-    password1 = serializers.CharField(style={"input_type": "password"}, write_only=True)
+    password = serializers.CharField(
+        style={"input_type": "password"}, write_only=True)
+    password1 = serializers.CharField(
+        style={"input_type": "password"}, write_only=True)
 
     class Meta:
         model = get_user_model()
@@ -49,7 +51,8 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
         country = validated_data["country"]
         city = validated_data["city"]
         street_address = validated_data["street_address"]
-        user_obj = get_user_model()(username=username, email=email, phone_number=phone_number, country=country, city=city, street_address=street_address)
+        user_obj = get_user_model()(username=username, email=email, phone_number=phone_number,
+                                    country=country, city=city, street_address=street_address)
         user_obj.set_password(password)
         user_obj.save()
 
