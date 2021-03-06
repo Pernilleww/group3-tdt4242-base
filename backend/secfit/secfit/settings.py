@@ -64,14 +64,8 @@ INSTALLED_APPS = [
     "comments.apps.CommentsConfig",
     "suggested_workouts.apps.SuggestedWorkoutsConfig",
     "corsheaders",
-    'django_nose',
 ]
-#TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
-NOSE_ARGS = [
-    '--with-coverage',
-    '--cover-package=users.serializers,workouts.permissions',
-    '--cover-erase',
-]
+
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
