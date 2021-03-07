@@ -34,7 +34,8 @@ def settings(config, *, db_colors=False, databases=True, test_runner=False, stat
             # logger.info('Adding $DATABASE_URL to default DATABASE Django setting.')
 
             # Configure Django for DATABASE_URL environment variable.
-            config['DATABASES']['default'] = dj_database_url.config(conn_max_age=conn_max_age, ssl_require=True)
+            config['DATABASES']['default'] = dj_database_url.config(
+                conn_max_age=conn_max_age, ssl_require=True)
 
             # logger.info('Adding $DATABASE_URL to TEST default DATABASE Django setting.')
 
@@ -65,7 +66,8 @@ def settings(config, *, db_colors=False, databases=True, test_runner=False, stat
             config['MIDDLEWARE_CLASSES'] = tuple(
                 ['whitenoise.middleware.WhiteNoiseMiddleware'] + list(config['MIDDLEWARE_CLASSES']))
         except KeyError:
-            config['MIDDLEWARE'] = tuple(['whitenoise.middleware.WhiteNoiseMiddleware'] + list(config['MIDDLEWARE']))
+            config['MIDDLEWARE'] = tuple(
+                ['whitenoise.middleware.WhiteNoiseMiddleware'] + list(config['MIDDLEWARE']))
 
         # Enable GZip.
         config['STATICFILES_STORAGE'] = 'whitenoise.storage.CompressedManifestStaticFilesStorage'

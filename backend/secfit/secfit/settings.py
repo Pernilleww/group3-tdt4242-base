@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     "comments.apps.CommentsConfig",
     "suggested_workouts.apps.SuggestedWorkoutsConfig",
     "corsheaders",
+    "django_heroku"
 
 ]
 
@@ -147,6 +148,11 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
     ),
 }
+AUTH_PASSWORD_VALIDATORS = [{
+    'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+            'OPTIONS': {
+                'min_length': 8,
+            }}]
 
 AUTH_USER_MODEL = "users.User"
 
