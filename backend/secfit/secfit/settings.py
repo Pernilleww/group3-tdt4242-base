@@ -64,8 +64,6 @@ INSTALLED_APPS = [
     "comments.apps.CommentsConfig",
     "suggested_workouts.apps.SuggestedWorkoutsConfig",
     "corsheaders",
-    "django_heroku"
-
 ]
 
 MIDDLEWARE = [
