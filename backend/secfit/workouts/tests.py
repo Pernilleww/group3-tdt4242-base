@@ -8,16 +8,16 @@ from rest_framework.test import APIRequestFactory, APITestCase
 
 class WorkoutPermissionsTestCases(TestCase):
     def setUp(self):
-        self.owner = get_user_model()(id=1, username='bitch', email='email@email.com', phone_number='92134654',
+        self.owner = get_user_model()(id=1, username='owner', email='email@email.com', phone_number='92134654',
                                       country='Norway', city='Paradise city', street_address='Hemmelig'
                                       )
         self.owner.save()
-        self.user = get_user_model()(id=2, username='balle', email='email@fake.com', phone_number='92134654',
+        self.user = get_user_model()(id=2, username='user', email='email@fake.com', phone_number='92134654',
                                      country='Norway', city='Hmm', street_address='Hemmelig'
                                      )
         self.user.save()
         self.factory = APIRequestFactory()
-        self.workout = Workout.objects.create(id=1, name='Ballesnerkel', date=timezone.now(), notes='Hva vil du?',
+        self.workout = Workout.objects.create(id=1, name='workout', date=timezone.now(), notes='Some notes',
                                               owner=self.owner, visibility='PU'
                                               )
         self.workout.save()
