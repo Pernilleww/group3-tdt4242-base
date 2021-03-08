@@ -4,7 +4,7 @@ from rest_framework.urlpatterns import format_suffix_patterns
 
 urlpatterns = [
     path("api/suggested-workouts/create/", views.createSuggestedWorkouts,
-         name="suggested_workouts"),
+         name="suggested_workouts_create"),
     path("api/suggested-workouts/athlete-list/",
          views.listAthleteSuggestedWorkouts, name="suggested_workouts_for_athlete"),
     path("api/suggested-workouts/coach-list/",

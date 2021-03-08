@@ -23,13 +23,12 @@ def createSuggestedWorkouts(request):
         chosen_athlete_id = request.data['athlete']
         chosen_athlete = User.objects.get(id=chosen_athlete_id)
         if(request.user != chosen_athlete.coach):
-            return Response({"message": "You can not assign the workout to someone who is not your athlete."}, status=status.HTTP_400_BAD_REQUEST)
-        # new_suggested_workout = SuggestedWorkout.objects.create(
-        #    coach=request.user, **serializer.validated_data)
+            return Response({"message": "You can not assign the workout to someone who is not your athlete."}, status=status.HTTP_401_UNAUTHORIZED)
+
         serializer.create(
             validated_data=serializer.validated_data, coach=request.user)
         return Response({"message": "Suggested workout successfully created!"}, status=status.HTTP_201_CREATED)
-    return Response({"message": "Something went wrong.", "error": serializer.errors})
+    return Response({"message": "Something went wrong.", "error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['GET'])
@@ -40,7 +39,7 @@ def listAthleteSuggestedWorkouts(request):
         return Response({"message": "You have to log in to see this information."}, status=status.HTTP_401_UNAUTHORIZED)
     serializer = SuggestedWorkoutSerializer(
         suggested_workouts, many=True, context={'request': request})
-    return Response(data=serializer.data, status=status.HTTP_200_OK)
+    return Response(data=serializer.data, status=status.HTTP_201_CREATED)
 
 
 @api_view(['GET'])

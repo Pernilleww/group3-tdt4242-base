@@ -2,7 +2,7 @@ from rest_framework import serializers
 from .models import SuggestedWorkout
 from users.models import User
 from workouts.serializers import WorkoutFileSerializer, ExerciseInstanceSerializer
-from workouts.models import ExerciseInstance, WorkoutFile
+from workouts.models import ExerciseInstance, WorkoutFile, Exercise
 
 
 class SuggestedWorkoutSerializer(serializers.ModelSerializer):
@@ -30,7 +30,7 @@ class SuggestedWorkoutSerializer(serializers.ModelSerializer):
             Workout: A newly created Workout
         """
         exercise_instances_data = validated_data.pop(
-            "suggested_exercise_instances")
+            'suggested_exercise_instances')
         files_data = []
         if "suggested_workout_files" in validated_data:
             files_data = validated_data.pop("suggested_workout_files")
@@ -70,7 +70,8 @@ class SuggestedWorkoutSerializer(serializers.ModelSerializer):
         for exercise_instance, exercise_instance_data in zip(
                 exercise_instances.all(), exercise_instances_data):
             exercise_instance.exercise = exercise_instance_data.get(
-                "exercise", exercise_instance.exercise)
+                "exercise", exercise_instance.exercise
+            )
             exercise_instance.number = exercise_instance_data.get(
                 "number", exercise_instance.number
             )
