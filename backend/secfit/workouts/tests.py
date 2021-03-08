@@ -3,8 +3,14 @@ from django.test import RequestFactory, TestCase
 from workouts.permissions import IsOwner, IsOwnerOfWorkout, IsCoachAndVisibleToCoach, IsCoachOfWorkoutAndVisibleToCoach, IsPublic, IsWorkoutPublic, IsReadOnly
 from django.utils import timezone
 from workouts.models import Workout, ExerciseInstance, Exercise
-from rest_framework.test import APIRequestFactory, APITestCase
-
+from rest_framework.test import APIRequestFactory, APITestCase, APIClient
+from rest_framework import status
+from unittest import skip
+from users.models import User
+import json
+'''
+    Serializers
+'''
 
 class WorkoutPermissionsTestCases(TestCase):
     def setUp(self):
@@ -107,7 +113,6 @@ class WorkoutPermissionsTestCases(TestCase):
         self.coach_of_owner.save()
         self.owner.coach = self.coach_of_owner
         self.owner.save()
-        print(self.owner.coach)
         self.request.user = self.coach_of_owner
         permission_class = IsCoachAndVisibleToCoach
         self.assertTrue(IsCoachAndVisibleToCoach.has_object_permission(
@@ -257,3 +262,25 @@ class WorkoutPermissionsTestCases(TestCase):
         self.request.method = 'OPTIONS'
         self.assertTrue(permission_class.has_object_permission(
             self, request=self.request, view=None, obj=None))
+
+
+
+'''
+    Boundary values
+'''
+defaultDataWorkout = {"name": "workoutname","date": "2021-01-1T13:29:00.000Z","notes": "notes","visibility":"PU","planned": "false","exercise_instances": [],"filename": []}
+counter = 0
+
+
+class WorkoutnameBoundaryTestCase(TestCase):
+    def setUp(self):
+        print("setup")
+        User.objects.create(id="99",username="JohnDoe",password="JohnDoePassword")
+        self.client = APIClient()
+        self.user = User.objects.get(id="99")
+        self.client.force_authenticate(user=self.user)
+
+    def test_simple(self):
+        response = self.client.post('http://testserver/api/workouts/', json.dumps(defaultDataWorkout), content_type='application/json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
