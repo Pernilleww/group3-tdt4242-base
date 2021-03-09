@@ -1,0 +1,85 @@
+[
+  {
+    "model": "users.user",
+    "pk": 1,
+    "fields": {
+      "password": "pbkdf2_sha256$216000$dwLWHh4UQcb1$WCO07fF5B35w+18a+hGFrJwUOnlHaTbzrEzhS+VfFOc=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "coach",
+      "first_name": "",
+      "last_name": "",
+      "email": "coach@hei.no",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2021-03-06T13:30:38.062Z",
+      "coach": null,
+      "phone_number": "90909",
+      "country": "uuu",
+      "city": "uuu",
+      "street_address": "uu",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 2,
+    "fields": {
+      "password": "pbkdf2_sha256$216000$FDoyirNZ6PwZ$Q7Fk+PDkyQg3yVF5L/snqMgpS8q6gP3Q7kgbfVDjhAU=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "athlete",
+      "first_name": "",
+      "last_name": "",
+      "email": "athlete@hei.no",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2021-03-06T13:30:56.670Z",
+      "coach": 1,
+      "phone_number": "99",
+      "country": "hh",
+      "city": "hhh",
+      "street_address": "h",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "users.offer",
+    "pk": 1,
+    "fields": {
+      "owner": 1,
+      "recipient": 2,
+      "status": "d",
+      "timestamp": "2021-03-06T13:31:08.471Z"
+    }
+  },
+  {
+    "model": "workouts.exercise",
+    "pk": 1,
+    "fields": {
+      "name": "Push-up",
+      "description": "A push-up (or press-up in British English) is a common calisthenics exercise beginning from the prone position.",
+      "unit": "reps"
+    }
+  },
+  {
+    "model": "workouts.exercise",
+    "pk": 2,
+    "fields": {
+      "name": "Crunch",
+      "description": "The crunch is one of the most popular abdominal exercises.",
+      "unit": "reps"
+    }
+  },
+  {
+    "model": "workouts.exercise",
+    "pk": 3,
+    "fields": {
+      "name": "Plank",
+      "description": "The plank is an isometric core strength exercise that involves maintaining a position similar to a push-up for the maximum possible time.",
+      "unit": "seconds"
+    }
+  }
+]
