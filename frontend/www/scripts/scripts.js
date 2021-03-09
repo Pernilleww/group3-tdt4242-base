@@ -117,7 +117,6 @@ function setReadOnly(readOnly, selector) {
 
     selector = `input[type="file"], select[name="${key}`;
     for (let input of form.querySelectorAll(selector)) {
-      console.log(input);
       if ((!readOnly && input.hasAttribute("disabled")))
       {
         input.disabled = false;
