@@ -1,0 +1,38 @@
+[
+  {
+    "model": "workouts.workout",
+    "pk": 1,
+    "fields": {
+      "name": "Workout Private - Coach",
+      "date": "2021-03-01T23:03:00Z",
+      "notes": "Hei",
+      "owner": 1,
+      "planned": false,
+      "visibility": "PR"
+    }
+  },
+  {
+    "model": "workouts.workout",
+    "pk": 2,
+    "fields": {
+      "name": "Workout Visible for Coach",
+      "date": "2021-03-01T23:05:00Z",
+      "notes": "dddd",
+      "owner": 2,
+      "planned": false,
+      "visibility": "CO"
+    }
+  },
+  {
+    "model": "workouts.workout",
+    "pk": 3,
+    "fields": {
+      "name": "Workout Public - Coach",
+      "date": "2021-03-06T23:09:00Z",
+      "notes": "dddd",
+      "owner": 1,
+      "planned": false,
+      "visibility": "PU"
+    }
+  }
+]
