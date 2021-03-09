@@ -52,7 +52,9 @@ async function retrieveWorkout(id, currentUser) {
         let input = form.querySelector("select:disabled");
         // files
         let filesDiv = document.querySelector("#uploaded-files");
+        console.log(workoutData.suggested_workout_files);
         for (let file of workoutData.suggested_workout_files) {
+            console.log("Her skal jeg")
             let a = document.createElement("a");
             a.href = file.file;
             let pathArray = file.file.split("/");
@@ -197,9 +199,9 @@ function generateWorkoutForm() {
     let date = new Date(formData.get('date')).toISOString();
     submitForm.append("date", date);
     submitForm.append("notes", formData.get("notes"));
-    //submitForm.append("owner", formData.get("coach_username"));
+    submitForm.append("owner", formData.get("coach_username"));
     submitForm.delete("athlete");
-    submitForm.append("visibility", "CO");
+    submitForm.append("visibility", "PU");
 
     // adding exercise instances
     let exerciseInstances = [];
@@ -238,6 +240,7 @@ function generateSuggestWorkoutForm() {
     submitForm.append("status", "p");
 
 
+    console.log(formData.get("athlete"));
 
     // adding exercise instances
     let exerciseInstances = [];
@@ -285,6 +288,7 @@ function handleCancelDuringWorkoutCreate() {
 }
 
 async function selectAthletesForSuggest(currentUser) {
+    console.log(currentUser)
 
     let suggestTypes = [];
     let suggestTemplate = document.querySelector("#template-suggest");
@@ -308,6 +312,7 @@ async function selectAthletesForSuggest(currentUser) {
     }
 
     let currentSuggestType = suggestTypes[0];
+    console.log(currentSuggestType);
     suggestTypeSelect.value = currentSuggestType.id;
 
     let divSuggestWorkout = document.querySelector("#div-suggest-workout");
@@ -359,6 +364,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     coachTitle = document.querySelector("#coach-title");
     athleteTitle = document.querySelector("#athlete-title");
     let postCommentButton = document.querySelector("#post-comment");
+    let divCommentRow = document.querySelector("#div-comment-row");
     let buttonAddExercise = document.querySelector("#btn-add-exercise");
     let buttonRemoveExercise = document.querySelector("#btn-remove-exercise");
 
@@ -383,6 +389,7 @@ window.addEventListener("DOMContentLoaded", async () => {
             deleteWorkoutButton.addEventListener("click", (async (id) => await deleteSuggestedWorkout(id)).bind(undefined, id));
             okWorkoutButton.addEventListener("click", (async (id) => await updateWorkout(id)).bind(undefined, id));
             postCommentButton.addEventListener("click", (async (id) => await createComment(id)).bind(undefined, id));
+            divCommentRow.className = divCommentRow.className.replace(" hide", "");
         }
 
 
@@ -399,6 +406,7 @@ window.addEventListener("DOMContentLoaded", async () => {
             declineWorkoutButton.addEventListener("click", (async (id) => await deleteSuggestedWorkout(id)).bind(undefined, id));
             acceptWorkoutButton.addEventListener("click", (async (id) => await acceptWorkout(id)).bind(undefined, id));
             postCommentButton.addEventListener("click", (async (id) => await createComment(id)).bind(undefined, id));
+            divCommentRow.className = divCommentRow.className.replace(" hide", "");
         }
     } else {
         await createBlankExercise();
@@ -429,6 +437,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 
         okWorkoutButton.addEventListener("click", (async (currentUser) => await createSuggestWorkout(currentUser)).bind(undefined, currentUser));
         cancelWorkoutButton.addEventListener("click", handleCancelDuringWorkoutCreate);
+        divCommentRow.className += " hide";
     }
 
 });
