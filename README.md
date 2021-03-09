@@ -126,3 +126,29 @@ If you want to run this as a mobile application
 It's possible you will need to add the platforms you want to run and build.
 The following documentation can be used to run the application in an Android emulator: \
 https://cordova.apache.org/docs/en/latest/guide/platforms/android/index.html
+
+##Tests
+
+### Django
+
+To run test for backend enter
+`python manage.py test`
+
+
+With coverage:
+`coverage run manage.py test`
+
+`coverage report -m ./users/serializers.py ./workouts/permissions.py`
+
+
+### Cypress
+
+To run the test in cypress go to the frontend folder and enter in different terminals:
+
+`npm run test:dev`
+
+`npm run django:testserver`
+
+`npm run cypress:open`
+
+

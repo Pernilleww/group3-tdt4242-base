@@ -1,0 +1,14 @@
+[
+  {
+    "model": "suggested_workouts.suggestedworkout",
+    "pk": 1,
+    "fields": {
+      "name": "Suggested Workout Seed",
+      "date": null,
+      "notes": "heiheihei",
+      "coach": 1,
+      "athlete": 2,
+      "status": "p"
+    }
+  }
+]
