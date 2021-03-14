@@ -23,8 +23,6 @@ describe('The Home Page', () => {
         cy.get('input[name="username"]').type("coach");
         cy.get('input[name="password"]').type("12345678")
 
-        cy.get('#rememberMe').check();
-
         cy.get("#btn-login").click();
 
         cy.url().should('include', '/workouts.html');
@@ -46,7 +44,19 @@ describe('The Home Page', () => {
         cy.url().should('include', '/workouts.html');
 
         cy.contains("Suggest workout test");
-        cy.contains("test");
+
+        cy.get("#btn-suggest-workout").click();
+
+        cy.get('input[name="name"]').type("Suggest workout test - to decline").should("have.value", "Suggest workout test - to decline");
+        cy.get('textarea[name="notes"]').type("Suggest workout test notes").should("have.value", "Suggest workout test notes");
+        cy.get('select[name="athlete"]').select("athlete");
+
+
+        cy.get("#btn-ok-workout").click();
+
+        cy.url().should('include', '/workouts.html');
+
+        cy.contains("Suggest workout test - to decline");
 
     });
 
@@ -94,6 +104,10 @@ describe('The Home Page', () => {
         cy.get('textarea[name="notes"]').clear().type("Suggest workout test notes edit").should("have.value", "Suggest workout test notes edit");
 
         cy.get("#btn-ok-workout").click();
+
+        cy.get('#nav-workouts').click({force: true});
+
+        cy.contains("Suggest workout test - edit");
     });
 
     it('should be shown in "Suggested Workouts To Athletes"', function () {
@@ -114,7 +128,6 @@ describe('The Home Page', () => {
     });
 
     it('should be shown in "Suggested Workouts From Coach"', function () {
-
 
         cy.visit("/login.html");
 
@@ -166,6 +179,14 @@ describe('The Home Page', () => {
 
         cy.contains("Owner: athlete");
 
+        cy.contains("Suggest workout test - accept").click();
+
+        cy.get("#btn-edit-workout").click();
+
+
+        cy.get("#btn-delete-workout").click();
+
+
     });
 
     it('should decline a suggested workout from coach', function () {
@@ -178,7 +199,7 @@ describe('The Home Page', () => {
         cy.get("#btn-login").click();
 
 
-        cy.contains("Suggested Workout Seed").click({force:true});
+        cy.contains("Suggest workout test - to decline").click({force:true});
 
         cy.contains("Suggested Workout from Coach");
 
@@ -186,8 +207,7 @@ describe('The Home Page', () => {
 
         cy.url().should('include', '/workouts.html');
 
-        cy.contains("Suggested Workout Seed").should('not.exist');
-
+        cy.contains("Suggest workout test - to decline").should('not.exist');
     });
 
 
