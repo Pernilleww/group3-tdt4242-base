@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model, password_validation
 from django.test import TestCase
 from users.serializers import UserSerializer
-from rest_framework.test import APIRequestFactory, APITestCase
+from rest_framework.test import APIRequestFactory, APITestCase, APIClient
 from rest_framework.request import Request
 from random import choice
 from string import ascii_uppercase
@@ -581,7 +581,7 @@ class CityBoundaryTestCase(TestCase):
 
     @skip("Skip so pipeline will pass")
     def test_numbers(self):
-        defaultDataRegister["city"]="Oslo!"
+        defaultDataRegister["city"]="Oslo1"
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -665,3 +665,123 @@ class Street_AdressBoundaryTestCase(TestCase):
             defaultDataRegister["city"]=x+"Strandveien"
             response = self.client.post("/api/users/", defaultDataRegister)
             self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+
+'''
+    2-way domain testing
+
+    We will do the following:
+    1. Define data, we will reuse the same data as in boundary values (ideally this could be automated so that all the data is only stored in one place, the validity could be set from the tests themselfs)
+    2. Do several loops to test the data togheter
+    3. Return results
+'''
+
+twoWayDomainData = [
+[("username", "", False), ("username", "johny", True), ("username", "johnDoe7653", True), ("username", "23165484", True), ("username", "John!#¤%&/<>|§()=?`^*_:;", False) ],
+[("email", "", False), ("email", "kkkk", False), ("email", "johnDoe@webmail.com", True), ("email", "johnDoe@web#%¤&/&.com", False)],
+[("password", "", False), ("password","short", False), ("password","passwordpassword", True), ("password","123346)(%y#(%¨>l<][475", True)],
+[("phone_number","", False), ("phone_number","1234", False), ("phone_number","1122334455", True), ("phone_number","phonenumber", False), ("phone_number","=?`^*_:;,.-'¨\+@£$", False)],
+[("country","", False), ("country", "Chad", True), ("country", "Norway1", False), ("country", "=?`^*_:;,.-'¨\+@£$", False)],
+[("city","", False), ("city", "Oslo", True), ("city", "Oslo1", False), ("city", "Oslo=?`^*_:;,.-'¨\+@£$", False)],
+[("street_adress","", False), ("street_adress", "Strandveien", True), ("street_adress", "Strandveien1", True), ("street_adress", "Kongens gate", True), ("street_adress", "Oslo=?`^*_:;,.-'¨\+@£$", False)]]
+
+two_way_passwords = [['johnsPassword', 'johnsPassword'], ['johnsPassword', 'johnsPassword1'], ['', 'johnsPassword'], ['johnsPassword', '']]
+
+class two_way_domain_test(TestCase):
+    def setUp(self):
+        self.failedCounter = 0
+        self.testsRunned = 0
+        self.failures_400 = []
+        self.failures_201 = []
+        self.client = APIClient()
+
+    def check(self, value1, value2):
+        # Iterate
+        self.testsRunned += 1
+        global counter
+        counter += 1
+
+        # Set data
+        self.defaultDataRegister = {
+        "username": "johnDoe"+str(counter), "email": "johnDoe@webserver.com", "password": "johnsPassword", "password1": "johnsPassword",  "phone_number": "11223344", "country": "Norway", "city": "Trondheim", "street_address": "Kongens gate 33"}
+        self.defaultDataRegister[value1[0]] = value1[1]
+        self.defaultDataRegister[value2[0]] = value2[1]
+
+        # Make sure that password == password1, we check for this below
+        if value1[0] == "password":
+            self.defaultDataRegister["password1"] = value1[1]
+        elif value2[0] == "password":
+            self.defaultDataRegister["password1"] = value2[1]
+
+        # Get result
+        response = self.client.post("/api/users/", self.defaultDataRegister)
+    
+        # If the result should be 201
+        if value1[2] and value2[2]:
+            if response.status_code != status.HTTP_201_CREATED:
+                self.failures_201.append({"type1": value1[0], "value1":value1[1], "type2":value2[0], "value2":value2[1]})
+                self.failedCounter +=1
+        
+        # If the result should be 400
+        else:
+            if response.status_code != status.HTTP_400_BAD_REQUEST:
+                self.failures_400.append({"type1": value1[0], "value1":value1[1], "type2":value2[0], "value2":value2[1]})
+                self.failedCounter +=1
+      
+        # Delete the created user to prevent errors when we test the same value of username several times
+        if response.status_code == status.HTTP_201_CREATED:
+            # Authenticate so we can delete
+            self.client.force_authenticate(user=User.objects.get(id = response.data['id']))
+            response2 = self.client.delete('/api/users/'+str(response.data['id'])+'/')
+
+
+    def two_way_password(self):
+        global counter
+        counter += 1
+        self.defaultDataRegister = {
+        "username": "johnDoe"+str(counter), "email": "johnDoe@webserver.com", "password": "johnsPassword", "password1": "johnsPassword",  "phone_number": "11223344", "country": "Norway", "city": "Trondheim", "street_address": "Kongens gate 33"}
+
+        for passwords in two_way_passwords:
+            self.defaultDataRegister['password'] = passwords[0]
+            self.defaultDataRegister['password1'] = passwords[1]
+            self.testsRunned += 1
+            # Get result
+            response = self.client.post("/api/users/", self.defaultDataRegister)
+        
+            # Check
+            if passwords[0] is passwords[1]:
+                if response.status_code != status.HTTP_201_CREATED:
+                    self.failures_201.append({"type1": 'password', "value1":passwords[0], "type2": 'password1', "value2":passwords[1]})
+                    self.failedCounter +=1
+            else:
+                if response.status_code != status.HTTP_400_BAD_REQUEST:
+                    self.failures_400.append({"type1": 'password', "value1":passwords[0], "type2": 'password1', "value2":passwords[1]})
+                    self.failedCounter +=1
+
+            # Delete the created user to prevent errors when we test the same value of username several times
+            if response.status_code == status.HTTP_201_CREATED:
+                # Authenticate so we can delete
+                self.client.force_authenticate(user=User.objects.get(id = response.data['id']))
+                response2 = self.client.delete('/api/users/'+str(response.data['id'])+'/')
+
+
+    def test_two_way_domain(self):
+        # For each element, try all other elements once     
+        for y1 in range(0, len(twoWayDomainData)):
+            for x1 in range(0, len(twoWayDomainData[y1])):
+                for y2 in range(y1+1, len(twoWayDomainData)):
+                    for x2 in range(0, len(twoWayDomainData[y2])):
+                        self.check(twoWayDomainData[y1][x1], twoWayDomainData[y2][x2])
+        
+        # Do two way testing for passwords
+        self.two_way_password()
+
+
+        # Print results
+        print("\n-------------------------------------------------------------------------------------------------------------------------------")
+        print("2-Way Domain Testing:\nTotal combinations (tests): {}\nTotal failed combinations (tests): {}".format(self.testsRunned, self.failedCounter))
+        print("{} combinations should work but didn't\n{} combinations should NOT work but did".format(len(self.failures_201), len(self.failures_400)))
+        print("The combinations that should have worked: {}\nThe combinations that should not have worked: {}".format(self.failures_201, self.failures_400))
+        print("-------------------------------------------------------------------------------------------------------------------------------")
+
