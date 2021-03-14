@@ -270,13 +270,6 @@ class WorkoutPermissionsTestCases(TestCase):
 defaultDataWorkout = {"name": "workoutname","date": "2021-01-1T13:29:00.000Z","notes": "notes","visibility":"PU","planned": "false","exercise_instances": [],"filename": []}
 counter = 0
 
-'''
-  def test_simple(self):
-        response = self.client.post('http://testserver/api/workouts/', json.dumps(defaultDataWorkout), content_type='application/json')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
-'''
-
 class WorkoutnameBoundaryTestCase(TestCase):
     def setUp(self):
         User.objects.create(id="999",username="JohnDoe",password="JohnDoePassword")
