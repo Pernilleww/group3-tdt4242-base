@@ -3,12 +3,16 @@ from django.test import RequestFactory, TestCase
 from workouts.permissions import IsOwner, IsOwnerOfWorkout, IsCoachAndVisibleToCoach, IsCoachOfWorkoutAndVisibleToCoach, IsPublic, IsWorkoutPublic, IsReadOnly
 from django.utils import timezone
 from workouts.models import Workout, ExerciseInstance, Exercise
+from workouts.serializers import WorkoutSerializer
 from rest_framework.test import APIRequestFactory, APITestCase, APIClient
 from rest_framework import status
 from unittest import skip
 from users.models import User
 import json
-
+from django.urls import reverse
+from datetime import datetime, timedelta
+import pytz
+from rest_framework.request import Request
 
 
 class WorkoutPermissionsTestCases(TestCase):
@@ -55,7 +59,7 @@ class WorkoutPermissionsTestCases(TestCase):
 
     def test_is_owner_of_workout(self):
         """
-        First testing has_permission 
+        First testing has_permission
         """
         # Make fake request
         self.request = self.factory.delete('/')
@@ -205,7 +209,7 @@ class WorkoutPermissionsTestCases(TestCase):
         self.assertTrue(permission_class.has_object_permission(
             self, request=self.request, view=None, obj=self.workout))
         """
-        Other visibility levels should return false 
+        Other visibility levels should return false
         """
         self.workout.visibility = 'CO'
         self.assertFalse(permission_class.has_object_permission(
@@ -263,347 +267,519 @@ class WorkoutPermissionsTestCases(TestCase):
             self, request=self.request, view=None, obj=None))
 
 
-
 '''
     Boundary values
 '''
-defaultDataWorkout = {"name": "workoutname","date": "2021-01-1T13:29:00.000Z","notes": "notes","visibility":"PU","planned": "false","exercise_instances": [],"filename": []}
+defaultDataWorkout = {"name": "workoutname", "date": "2021-01-1T13:29:00.000Z", "notes": "notes",
+                      "visibility": "PU", "planned": "false", "exercise_instances": [], "filename": []}
 counter = 0
 
 class WorkoutnameBoundaryTestCase(TestCase):
     def setUp(self):
-        User.objects.create(id="999",username="JohnDoe",password="JohnDoePassword")
+        User.objects.create(id="999", username="JohnDoe",
+                            password="JohnDoePassword")
         self.client = APIClient()
         self.user = User.objects.get(id="999")
         self.client.force_authenticate(user=self.user)
 
     @skip("Skip so pipeline will pass")
     def test_empty_name(self):
-        defaultDataWorkout["name"] =""
-        response = self.client.post('http://testserver/api/workouts/', json.dumps(defaultDataWorkout), content_type='application/json')
+        defaultDataWorkout["name"] = ""
+        response = self.client.post('http://testserver/api/workouts/',
+                                    json.dumps(defaultDataWorkout), content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
     @skip("Skip so pipeline will pass")
     def test_1_boundary(self):
-        defaultDataWorkout["name"] ="k"
-        response = self.client.post('http://testserver/api/workouts/', json.dumps(defaultDataWorkout), content_type='application/json')
+        defaultDataWorkout["name"] = "k"
+        response = self.client.post('http://testserver/api/workouts/',
+                                    json.dumps(defaultDataWorkout), content_type='application/json')
         self.assertEqual(response.status_code, 201)
 
     @skip("Skip so pipeline will pass")
     def test_2_boundary(self):
-        defaultDataWorkout["name"] ="kk"
-        response = self.client.post('http://testserver/api/workouts/', json.dumps(defaultDataWorkout), content_type='application/json')
+        defaultDataWorkout["name"] = "kk"
+        response = self.client.post('http://testserver/api/workouts/',
+                                    json.dumps(defaultDataWorkout), content_type='application/json')
         self.assertEqual(response.status_code, 201)
 
     @skip("Skip so pipeline will pass")
     def test_49_boundary(self):
-        defaultDataWorkout["name"]="kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"
-        response = self.client.post('http://testserver/api/workouts/', json.dumps(defaultDataWorkout), content_type='application/json')
+        defaultDataWorkout["name"] = "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"
+        response = self.client.post('http://testserver/api/workouts/',
+                                    json.dumps(defaultDataWorkout), content_type='application/json')
         self.assertEqual(response.status_code, 201)
 
     @skip("Skip so pipeline will pass")
     def test_50_boundary(self):
-        defaultDataWorkout["name"]="kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"
-        response = self.client.post('http://testserver/api/workouts/', json.dumps(defaultDataWorkout), content_type='application/json')
+        defaultDataWorkout["name"] = "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"
+        response = self.client.post('http://testserver/api/workouts/',
+                                    json.dumps(defaultDataWorkout), content_type='application/json')
         self.assertEqual(response.status_code, 201)
 
     @skip("Skip so pipeline will pass")
     def test_51_boundary(self):
-        defaultDataWorkout["name"]="kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"
-        response = self.client.post('http://testserver/api/workouts/', json.dumps(defaultDataWorkout), content_type='application/json')
+        defaultDataWorkout["name"] = "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"
+        response = self.client.post('http://testserver/api/workouts/',
+                                    json.dumps(defaultDataWorkout), content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
     @skip("Skip so pipeline will pass")
     def test_characters(self):
-        defaultDataWorkout["name"]="LegDay"
-        response = self.client.post('http://testserver/api/workouts/', json.dumps(defaultDataWorkout), content_type='application/json')
+        defaultDataWorkout["name"] = "LegDay"
+        response = self.client.post('http://testserver/api/workouts/',
+                                    json.dumps(defaultDataWorkout), content_type='application/json')
         self.assertEqual(response.status_code, 201)
 
     @skip("Skip so pipeline will pass")
     def test_numbers(self):
-        defaultDataWorkout["name"]="LegDay3"
-        response = self.client.post('http://testserver/api/workouts/', json.dumps(defaultDataWorkout), content_type='application/json')
+        defaultDataWorkout["name"] = "LegDay3"
+        response = self.client.post('http://testserver/api/workouts/',
+                                    json.dumps(defaultDataWorkout), content_type='application/json')
         self.assertEqual(response.status_code, 201)
 
     @skip("Skip so pipeline will pass")
     def test_symbols(self):
         symbols = "!#¤%&/<>|§()=?`^*_:;,.-'¨\+@£$€{[]}´~` "
         for x in symbols:
-            defaultDataWorkout["name"]=x+"LegDay"
-            response = self.client.post('http://testserver/api/workouts/', json.dumps(defaultDataWorkout), content_type='application/json')
+            defaultDataWorkout["name"] = x+"LegDay"
+            response = self.client.post('http://testserver/api/workouts/', json.dumps(
+                defaultDataWorkout), content_type='application/json')
             self.assertEqual(response.status_code, 400)
 
     @skip("Skip so pipeline will pass")
     def test_space(self):
-        defaultDataWorkout["name"]="Leg Day 3"
-        response = self.client.post('http://testserver/api/workouts/', json.dumps(defaultDataWorkout), content_type='application/json')
+        defaultDataWorkout["name"] = "Leg Day 3"
+        response = self.client.post('http://testserver/api/workouts/',
+                                    json.dumps(defaultDataWorkout), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-
 
 
 class DateBoundaryTestCase(TestCase):
     def setUp(self):
-        User.objects.create(id="999",username="JohnDoe",password="JohnDoePassword")
+        User.objects.create(id="999", username="JohnDoe",
+                            password="JohnDoePassword")
         self.client = APIClient()
         self.user = User.objects.get(id="999")
         self.client.force_authenticate(user=self.user)
 
     @skip("Skip so pipeline will pass")
     def test_empty_date(self):
-        defaultDataWorkout["date"] =""
-        response = self.client.post('http://testserver/api/workouts/', json.dumps(defaultDataWorkout), content_type='application/json')
+        defaultDataWorkout["date"] = ""
+        response = self.client.post('http://testserver/api/workouts/',
+                                    json.dumps(defaultDataWorkout), content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
     @skip("Skip so pipeline will pass")
     def test_correct_date(self):
-        defaultDataWorkout["date"]="2021-02-2T12:00:00.000Z"
-        response = self.client.post('http://testserver/api/workouts/', json.dumps(defaultDataWorkout), content_type='application/json')
+        defaultDataWorkout["date"] = "2021-02-2T12:00:00.000Z"
+        response = self.client.post('http://testserver/api/workouts/',
+                                    json.dumps(defaultDataWorkout), content_type='application/json')
         self.assertEqual(response.status_code, 201)
 
     @skip("Skip so pipeline will pass")
     def test_incorrect_date(self):
-        defaultDataWorkout["date"]="4. march 2021"
-        response = self.client.post('http://testserver/api/workouts/', json.dumps(defaultDataWorkout), content_type='application/json')
+        defaultDataWorkout["date"] = "4. march 2021"
+        response = self.client.post('http://testserver/api/workouts/',
+                                    json.dumps(defaultDataWorkout), content_type='application/json')
         self.assertEqual(response.status_code, 400)
-
-
 
 
 class VisibilityBoundaryTestCase(TestCase):
     def setUp(self):
-        User.objects.create(id="999",username="JohnDoe",password="JohnDoePassword")
+        User.objects.create(id="999", username="JohnDoe",
+                            password="JohnDoePassword")
         self.client = APIClient()
         self.user = User.objects.get(id="999")
         self.client.force_authenticate(user=self.user)
 
     @skip("Skip so pipeline will pass")
     def test_empty_owner(self):
-        defaultDataWorkout["visibility"] =""
-        response = self.client.post('http://testserver/api/workouts/', json.dumps(defaultDataWorkout), content_type='application/json')
+        defaultDataWorkout["visibility"] = ""
+        response = self.client.post('http://testserver/api/workouts/',
+                                    json.dumps(defaultDataWorkout), content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
     @skip("Skip so pipeline will pass")
     def test_PU(self):
-        defaultDataWorkout["visibility"] ="PU"
-        response = self.client.post('http://testserver/api/workouts/', json.dumps(defaultDataWorkout), content_type='application/json')
+        defaultDataWorkout["visibility"] = "PU"
+        response = self.client.post('http://testserver/api/workouts/',
+                                    json.dumps(defaultDataWorkout), content_type='application/json')
         self.assertEqual(response.status_code, 201)
 
     @skip("Skip so pipeline will pass")
-    def test_CO(self):   
-        defaultDataWorkout["visibility"] ="CO"
-        response = self.client.post('http://testserver/api/workouts/', json.dumps(defaultDataWorkout), content_type='application/json')
+    def test_CO(self):
+        defaultDataWorkout["visibility"] = "CO"
+        response = self.client.post('http://testserver/api/workouts/',
+                                    json.dumps(defaultDataWorkout), content_type='application/json')
         self.assertEqual(response.status_code, 201)
 
     @skip("Skip so pipeline will pass")
-    def test_PR(self):   
-        defaultDataWorkout["visibility"] ="PR"
-        response = self.client.post('http://testserver/api/workouts/', json.dumps(defaultDataWorkout), content_type='application/json')
+    def test_PR(self):
+        defaultDataWorkout["visibility"] = "PR"
+        response = self.client.post('http://testserver/api/workouts/',
+                                    json.dumps(defaultDataWorkout), content_type='application/json')
         self.assertEqual(response.status_code, 201)
 
     @skip("Skip so pipeline will pass")
-    def test_illegal_value(self):   
-        defaultDataWorkout["visibility"] ="xy"
-        response = self.client.post('http://testserver/api/workouts/', json.dumps(defaultDataWorkout), content_type='application/json')
+    def test_illegal_value(self):
+        defaultDataWorkout["visibility"] = "xy"
+        response = self.client.post('http://testserver/api/workouts/',
+                                    json.dumps(defaultDataWorkout), content_type='application/json')
         self.assertEqual(response.status_code, 400)
-    
 
 
 class NotesBoundaryTestCase(TestCase):
     def setUp(self):
-        User.objects.create(id="999",username="JohnDoe",password="JohnDoePassword")
+        User.objects.create(id="999", username="JohnDoe",
+                            password="JohnDoePassword")
         self.client = APIClient()
         self.user = User.objects.get(id="999")
         self.client.force_authenticate(user=self.user)
 
     @skip("Skip so pipeline will pass")
     def test_empty_name(self):
-        defaultDataWorkout["notes"] =""
-        response = self.client.post('http://testserver/api/workouts/', json.dumps(defaultDataWorkout), content_type='application/json')
+        defaultDataWorkout["notes"] = ""
+        response = self.client.post('http://testserver/api/workouts/',
+                                    json.dumps(defaultDataWorkout), content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
     @skip("Skip so pipeline will pass")
     def test_1_boundary(self):
-        defaultDataWorkout["notes"] ="k"
-        response = self.client.post('http://testserver/api/workouts/', json.dumps(defaultDataWorkout), content_type='application/json')
+        defaultDataWorkout["notes"] = "k"
+        response = self.client.post('http://testserver/api/workouts/',
+                                    json.dumps(defaultDataWorkout), content_type='application/json')
         self.assertEqual(response.status_code, 201)
 
     @skip("Skip so pipeline will pass")
     def test_2_boundary(self):
-        defaultDataWorkout["notes"] ="kk"
-        response = self.client.post('http://testserver/api/workouts/', json.dumps(defaultDataWorkout), content_type='application/json')
+        defaultDataWorkout["notes"] = "kk"
+        response = self.client.post('http://testserver/api/workouts/',
+                                    json.dumps(defaultDataWorkout), content_type='application/json')
         self.assertEqual(response.status_code, 201)
 
     @skip("Skip so pipeline will pass")
     def test_49_boundary(self):
-        defaultDataWorkout["notes"] ="kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"
-        response = self.client.post('http://testserver/api/workouts/', json.dumps(defaultDataWorkout), content_type='application/json')
+        defaultDataWorkout["notes"] = "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"
+        response = self.client.post('http://testserver/api/workouts/',
+                                    json.dumps(defaultDataWorkout), content_type='application/json')
         self.assertEqual(response.status_code, 201)
 
     @skip("Skip so pipeline will pass")
     def test_50_boundary(self):
-        defaultDataWorkout["notes"] ="kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"
-        response = self.client.post('http://testserver/api/workouts/', json.dumps(defaultDataWorkout), content_type='application/json')
+        defaultDataWorkout["notes"] = "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"
+        response = self.client.post('http://testserver/api/workouts/',
+                                    json.dumps(defaultDataWorkout), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-
 
     @skip("Skip so pipeline will pass")
     def test_51_boundary(self):
-        defaultDataWorkout["notes"] ="kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"
-        response = self.client.post('http://testserver/api/workouts/', json.dumps(defaultDataWorkout), content_type='application/json')
+        defaultDataWorkout["notes"] = "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"
+        response = self.client.post('http://testserver/api/workouts/',
+                                    json.dumps(defaultDataWorkout), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-
 
     @skip("Skip so pipeline will pass")
     def test_letters(self):
-        defaultDataWorkout["notes"]="Easy"
-        response = self.client.post('http://testserver/api/workouts/', json.dumps(defaultDataWorkout), content_type='application/json')
+        defaultDataWorkout["notes"] = "Easy"
+        response = self.client.post('http://testserver/api/workouts/',
+                                    json.dumps(defaultDataWorkout), content_type='application/json')
         self.assertEqual(response.status_code, 201)
 
     @skip("Skip so pipeline will pass")
     def test_numbers(self):
-        defaultDataWorkout["notes"]="12315489798451216475"
-        response = self.client.post('http://testserver/api/workouts/', json.dumps(defaultDataWorkout), content_type='application/json')
+        defaultDataWorkout["notes"] = "12315489798451216475"
+        response = self.client.post('http://testserver/api/workouts/',
+                                    json.dumps(defaultDataWorkout), content_type='application/json')
         self.assertEqual(response.status_code, 201)
 
     @skip("Skip so pipeline will pass")
     def test_symbols(self):
-        defaultDataWorkout["notes"]= "!#¤%&/<>|§()=?`^*_:;,.-'¨\+@£$€{[]}´~` "
-        response = self.client.post('http://testserver/api/workouts/', json.dumps(defaultDataWorkout), content_type='application/json')
+        defaultDataWorkout["notes"] = "!#¤%&/<>|§()=?`^*_:;,.-'¨\+@£$€{[]}´~` "
+        response = self.client.post('http://testserver/api/workouts/',
+                                    json.dumps(defaultDataWorkout), content_type='application/json')
         self.assertEqual(response.status_code, 201)
 
     @skip("Skip so pipeline will pass")
     def test_mix(self):
-        defaultDataWorkout["notes"]= "Remember to have focus on pusture, and don't forgot to keep arm straight!!"
-        response = self.client.post('http://testserver/api/workouts/', json.dumps(defaultDataWorkout), content_type='application/json')
+        defaultDataWorkout["notes"] = "Remember to have focus on pusture, and don't forgot to keep arm straight!!"
+        response = self.client.post('http://testserver/api/workouts/',
+                                    json.dumps(defaultDataWorkout), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-
-
 
 
 class Exercise_instancesBoundaryTestCase(TestCase):
     def setUp(self):
-        User.objects.create(id="999",username="JohnDoe",password="JohnDoePassword")
+        User.objects.create(id="999", username="JohnDoe",
+                            password="JohnDoePassword")
         self.client = APIClient()
         self.user = User.objects.get(id="999")
         self.client.force_authenticate(user=self.user)
 
         # Create an exercise
-        self.client.post('http://testserver/api/exercises/', json.dumps({"name":"Pullups","description":"Hold on with both hands, and pull yourself up","unit":"number of lifts"}), content_type='application/json')
+        self.client.post('http://testserver/api/exercises/', json.dumps(
+            {"name": "Pullups", "description": "Hold on with both hands, and pull yourself up", "unit": "number of lifts"}), content_type='application/json')
 
     @skip("Skip so pipeline will pass")
     def test_empty_exercise_instances(self):
         defaultDataWorkout["exercise_instances"] = []
-        response = self.client.post('http://testserver/api/workouts/', json.dumps(defaultDataWorkout), content_type='application/json')
+        response = self.client.post('http://testserver/api/workouts/',
+                                    json.dumps(defaultDataWorkout), content_type='application/json')
         self.assertEqual(response.status_code, 201)
 
     @skip("Skip so pipeline will pass")
     def test_valid_exercise_instances(self):
-        defaultDataWorkout["exercise_instances"] = [{"exercise":"http://testserver/api/exercises/1/","number":"2","sets":"10"}]
-        response = self.client.post('http://testserver/api/workouts/', json.dumps(defaultDataWorkout), content_type='application/json')
+        defaultDataWorkout["exercise_instances"] = [
+            {"exercise": "http://testserver/api/exercises/1/", "number": "2", "sets": "10"}]
+        response = self.client.post('http://testserver/api/workouts/',
+                                    json.dumps(defaultDataWorkout), content_type='application/json')
         self.assertEqual(response.status_code, 201)
 
     @skip("Skip so pipeline will pass")
     def test_exercise_instances_invalid_exercise_name(self):
-        defaultDataWorkout["exercise_instances"] = [{"exercise":"exercie 01","number":"2","sets":"10"}]
-        response = self.client.post('http://testserver/api/workouts/', json.dumps(defaultDataWorkout), content_type='application/json')
+        defaultDataWorkout["exercise_instances"] = [
+            {"exercise": "exercie 01", "number": "2", "sets": "10"}]
+        response = self.client.post('http://testserver/api/workouts/',
+                                    json.dumps(defaultDataWorkout), content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
     # Exercise_instance number testing
 
     @skip("Skip so pipeline will pass")
     def test_exercise_instances_negative_number(self):
-        defaultDataWorkout["exercise_instances"] = [{"exercise":"http://testserver/api/exercises/1/","number":"-1","sets":"10"}]
-        response = self.client.post('http://testserver/api/workouts/', json.dumps(defaultDataWorkout), content_type='application/json')
+        defaultDataWorkout["exercise_instances"] = [
+            {"exercise": "http://testserver/api/exercises/1/", "number": "-1", "sets": "10"}]
+        response = self.client.post('http://testserver/api/workouts/',
+                                    json.dumps(defaultDataWorkout), content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
     @skip("Skip so pipeline will pass")
     def test__exercise_instances_number_empty(self):
-        defaultDataWorkout["exercise_instances"] = [{"exercise":"http://testserver/api/exercises/1/","number":"","sets":"10"}]
-        response = self.client.post('http://testserver/api/workouts/', json.dumps(defaultDataWorkout), content_type='application/json')
+        defaultDataWorkout["exercise_instances"] = [
+            {"exercise": "http://testserver/api/exercises/1/", "number": "", "sets": "10"}]
+        response = self.client.post('http://testserver/api/workouts/',
+                                    json.dumps(defaultDataWorkout), content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
     @skip("Skip so pipeline will pass")
     def test__exercise_instances_number_0_boundary(self):
-        defaultDataWorkout["exercise_instances"] = [{"exercise":"http://testserver/api/exercises/1/","number":"0","sets":"10"}]
-        response = self.client.post('http://testserver/api/workouts/', json.dumps(defaultDataWorkout), content_type='application/json')
+        defaultDataWorkout["exercise_instances"] = [
+            {"exercise": "http://testserver/api/exercises/1/", "number": "0", "sets": "10"}]
+        response = self.client.post('http://testserver/api/workouts/',
+                                    json.dumps(defaultDataWorkout), content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
     @skip("Skip so pipeline will pass")
     def test__exercise_instances_number_1_boundary(self):
-        defaultDataWorkout["exercise_instances"] = [{"exercise":"http://testserver/api/exercises/1/","number":"1","sets":"10"}]
-        response = self.client.post('http://testserver/api/workouts/', json.dumps(defaultDataWorkout), content_type='application/json')
+        defaultDataWorkout["exercise_instances"] = [
+            {"exercise": "http://testserver/api/exercises/1/", "number": "1", "sets": "10"}]
+        response = self.client.post('http://testserver/api/workouts/',
+                                    json.dumps(defaultDataWorkout), content_type='application/json')
         self.assertEqual(response.status_code, 201)
 
-    @skip("Skip so pipeline will pass")   
+    @skip("Skip so pipeline will pass")
     def test__exercise_instances_number_2_boundary(self):
-        defaultDataWorkout["exercise_instances"] = [{"exercise":"http://testserver/api/exercises/1/","number":"2","sets":"10"}]
-        response = self.client.post('http://testserver/api/workouts/', json.dumps(defaultDataWorkout), content_type='application/json')
+        defaultDataWorkout["exercise_instances"] = [
+            {"exercise": "http://testserver/api/exercises/1/", "number": "2", "sets": "10"}]
+        response = self.client.post('http://testserver/api/workouts/',
+                                    json.dumps(defaultDataWorkout), content_type='application/json')
         self.assertEqual(response.status_code, 201)
 
     @skip("Skip so pipeline will pass")
     def test__exercise_instances_number_99_boundary(self):
-        defaultDataWorkout["exercise_instances"] = [{"exercise":"http://testserver/api/exercises/1/","number":"99","sets":"10"}]
-        response = self.client.post('http://testserver/api/workouts/', json.dumps(defaultDataWorkout), content_type='application/json')
+        defaultDataWorkout["exercise_instances"] = [
+            {"exercise": "http://testserver/api/exercises/1/", "number": "99", "sets": "10"}]
+        response = self.client.post('http://testserver/api/workouts/',
+                                    json.dumps(defaultDataWorkout), content_type='application/json')
         self.assertEqual(response.status_code, 201)
 
     @skip("Skip so pipeline will pass")
     def test__exercise_instances_number_100_boundary(self):
-        defaultDataWorkout["exercise_instances"] = [{"exercise":"http://testserver/api/exercises/1/","number":"100","sets":"10"}]
-        response = self.client.post('http://testserver/api/workouts/', json.dumps(defaultDataWorkout), content_type='application/json')
+        defaultDataWorkout["exercise_instances"] = [
+            {"exercise": "http://testserver/api/exercises/1/", "number": "100", "sets": "10"}]
+        response = self.client.post('http://testserver/api/workouts/',
+                                    json.dumps(defaultDataWorkout), content_type='application/json')
         self.assertEqual(response.status_code, 201)
 
     @skip("Skip so pipeline will pass")
     def test__exercise_instances_number_100_boundary(self):
-        defaultDataWorkout["exercise_instances"] = [{"exercise":"http://testserver/api/exercises/1/","number":"101","sets":"10"}]
-        response = self.client.post('http://testserver/api/workouts/', json.dumps(defaultDataWorkout), content_type='application/json')
+        defaultDataWorkout["exercise_instances"] = [
+            {"exercise": "http://testserver/api/exercises/1/", "number": "101", "sets": "10"}]
+        response = self.client.post('http://testserver/api/workouts/',
+                                    json.dumps(defaultDataWorkout), content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
         # Exercise_instance sets testing
 
     @skip("Skip so pipeline will pass")
     def test_exercise_instances_negative_set(self):
-        defaultDataWorkout["exercise_instances"] = [{"exercise":"http://testserver/api/exercises/1/","number":"2","sets":"-1"}]
-        response = self.client.post('http://testserver/api/workouts/', json.dumps(defaultDataWorkout), content_type='application/json')
+        defaultDataWorkout["exercise_instances"] = [
+            {"exercise": "http://testserver/api/exercises/1/", "number": "2", "sets": "-1"}]
+        response = self.client.post('http://testserver/api/workouts/',
+                                    json.dumps(defaultDataWorkout), content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
     @skip("Skip so pipeline will pass")
     def test__exercise_instances_set_empty(self):
-        defaultDataWorkout["exercise_instances"] = [{"exercise":"http://testserver/api/exercises/1/","number":"2","sets":""}]
-        response = self.client.post('http://testserver/api/workouts/', json.dumps(defaultDataWorkout), content_type='application/json')
+        defaultDataWorkout["exercise_instances"] = [
+            {"exercise": "http://testserver/api/exercises/1/", "number": "2", "sets": ""}]
+        response = self.client.post('http://testserver/api/workouts/',
+                                    json.dumps(defaultDataWorkout), content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
     @skip("Skip so pipeline will pass")
     def test__exercise_instances_set_0_boundary(self):
-        defaultDataWorkout["exercise_instances"] = [{"exercise":"http://testserver/api/exercises/1/","number":"2","sets":"0"}]
-        response = self.client.post('http://testserver/api/workouts/', json.dumps(defaultDataWorkout), content_type='application/json')
+        defaultDataWorkout["exercise_instances"] = [
+            {"exercise": "http://testserver/api/exercises/1/", "number": "2", "sets": "0"}]
+        response = self.client.post('http://testserver/api/workouts/',
+                                    json.dumps(defaultDataWorkout), content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
     @skip("Skip so pipeline will pass")
     def test__exercise_instances_set_1_boundary(self):
-        defaultDataWorkout["exercise_instances"] = [{"exercise":"http://testserver/api/exercises/1/","number":"2","sets":"1"}]
-        response = self.client.post('http://testserver/api/workouts/', json.dumps(defaultDataWorkout), content_type='application/json')
+        defaultDataWorkout["exercise_instances"] = [
+            {"exercise": "http://testserver/api/exercises/1/", "number": "2", "sets": "1"}]
+        response = self.client.post('http://testserver/api/workouts/',
+                                    json.dumps(defaultDataWorkout), content_type='application/json')
         self.assertEqual(response.status_code, 201)
 
-    @skip("Skip so pipeline will pass")    
+    @skip("Skip so pipeline will pass")
     def test__exercise_instances_set_2_boundary(self):
-        defaultDataWorkout["exercise_instances"] = [{"exercise":"http://testserver/api/exercises/1/","number":"2","sets":"2"}]
-        response = self.client.post('http://testserver/api/workouts/', json.dumps(defaultDataWorkout), content_type='application/json')
+        defaultDataWorkout["exercise_instances"] = [
+            {"exercise": "http://testserver/api/exercises/1/", "number": "2", "sets": "2"}]
+        response = self.client.post('http://testserver/api/workouts/',
+                                    json.dumps(defaultDataWorkout), content_type='application/json')
         self.assertEqual(response.status_code, 201)
 
     @skip("Skip so pipeline will pass")
     def test__exercise_instances_set_99_boundary(self):
-        defaultDataWorkout["exercise_instances"] = [{"exercise":"http://testserver/api/exercises/1/","number":"2","sets":"99"}]
-        response = self.client.post('http://testserver/api/workouts/', json.dumps(defaultDataWorkout), content_type='application/json')
+        defaultDataWorkout["exercise_instances"] = [
+            {"exercise": "http://testserver/api/exercises/1/", "number": "2", "sets": "99"}]
+        response = self.client.post('http://testserver/api/workouts/',
+                                    json.dumps(defaultDataWorkout), content_type='application/json')
         self.assertEqual(response.status_code, 201)
 
     @skip("Skip so pipeline will pass")
     def test__exercise_instances_set_100_boundary(self):
-        defaultDataWorkout["exercise_instances"] = [{"exercise":"http://testserver/api/exercises/1/","number":"2","sets":"100"}]
-        response = self.client.post('http://testserver/api/workouts/', json.dumps(defaultDataWorkout), content_type='application/json')
+        defaultDataWorkout["exercise_instances"] = [
+            {"exercise": "http://testserver/api/exercises/1/", "number": "2", "sets": "100"}]
+        response = self.client.post('http://testserver/api/workouts/',
+                                    json.dumps(defaultDataWorkout), content_type='application/json')
         self.assertEqual(response.status_code, 201)
 
     @skip("Skip so pipeline will pass")
     def test__exercise_instances_set_100_boundary(self):
-        defaultDataWorkout["exercise_instances"] = [{"exercise":"http://testserver/api/exercises/1/","number":"2","sets":"101"}]
-        response = self.client.post('http://testserver/api/workouts/', json.dumps(defaultDataWorkout), content_type='application/json')
+        defaultDataWorkout["exercise_instances"] = [
+            {"exercise": "http://testserver/api/exercises/1/", "number": "2", "sets": "101"}]
+        response = self.client.post('http://testserver/api/workouts/',
+                                    json.dumps(defaultDataWorkout), content_type='application/json')
         self.assertEqual(response.status_code, 400)
+
+
+class IntegrationTestPlannedWorkout(APITestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.athlete = get_user_model()(id=4, username='athlete', email='athlete@email.com', phone_number='92134654',
+                                        country='Norway', city='Trondheim', street_address='Sandgata 19'
+                                        )
+        self.athlete.save()
+        self.timeNow = datetime.now()
+        self.timeNowAdjusted = pytz.utc.localize(self.timeNow)
+        self.passedDate = self.timeNowAdjusted - timedelta(days=365)
+        self.futureDate = self.timeNowAdjusted + timedelta(days=365)
+        self.passedPlannedWorkout = Workout.objects.create(
+            id=2, name='Planned workout', date=self.passedDate, visibility='PU', planned=True, owner=self.athlete)
+        self.passedPlannedWorkout.save()
+        self.client.force_authenticate(user=self.athlete)
+
+    """
+    Testing if the endpoint to api/workouts automatically logs a workout by setting the planned attribute
+    for the workout from True to False when a date has passed 
+    """
+
+    def test_autolog_functionality(self):
+        response = self.client.get(
+            reverse("workout-list")
+        )
+        # Retrieving the results of the response
+        response_data = list(response.data.items())[3][1][0]
+        # Convert OrderedDict to a list of tuples
+        response_data_values = list(response_data.items())
+        # Retrieving the tuples containing value for the 'planned' attribute
+        response_data_values_planned = response_data_values[6]
+        # Checks if the 'planned' attribute was set to False
+        self.assertEquals(response_data_values_planned, ('planned', False))
+        # Check if the workout object's planned attribute also got set to False
+        self.assertFalse(Workout.objects.get(id=2).planned)
+
+    """
+    Test that post requests to a planned workout (planned=True) accepts only future dates
+    """
+
+    def test_valid_create_planned_workout(self):
+        invalid_payload = {'name': 'Invalid planned workout',
+                           'date': str(self.futureDate),
+                           'notes': 'Taking notes',
+                           'visibility': 'PU',
+                           'planned': True,
+                           'owner': 'http://localhost:8000/api/exercises/4/',
+                           'exercise_instances': []
+                           }
+        response = self.client.post(
+            reverse('workout-list'),
+            data=json.dumps(invalid_payload),
+            content_type='application/json'
+        )
+        self.assertEquals(response.status_code, status.HTTP_201_CREATED)
+
+    def test_invalid_create_planned_workout(self):
+        valid_payload = {'name': 'Invalid planned workout',
+                         'date': str(self.passedDate),
+                         'notes': 'Taking notes',
+                         'visibility': 'PU',
+                         'planned': True,
+                         'owner': 'http://localhost:8000/api/exercises/4/',
+                         'exercise_instances': []
+                         }
+        response = self.client.post(
+            reverse('workout-list'),
+            data=json.dumps(valid_payload),
+            content_type='application/json'
+        )
+        self.assertEquals(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    """
+    Test creation of logged workout (planned=False) accepts only past dates
+    """
+
+    def test_valid_create_logged_workout(self):
+        valid_payload = {'name': 'Valid planned workout',
+                         'date': str(self.passedDate),
+                         'notes': 'Taking notes',
+                         'visibility': 'PU',
+                         'planned': False,
+                         'owner': 'http://localhost:8000/api/exercises/4/',
+                         'exercise_instances': []
+                         }
+
+        response = self.client.post(
+            reverse('workout-list'),
+            data=json.dumps(valid_payload),
+            content_type='application/json')
+        self.assertEquals(response.status_code, status.HTTP_201_CREATED)
+
+    def test_invalid_create_logged_workout(self):
+        invalid_payload = {'name': 'Invalid planned workout',
+                           'date': str(self.futureDate),
+                           'notes': 'Taking notes',
+                           'visibility': 'PU',
+                           'planned': False,
+                           'owner': 'http://localhost:8000/api/exercises/4/',
+                           'exercise_instances': []
+                           }
+
+        response = self.client.post(
+            reverse('workout-list'),
+            data=json.dumps(invalid_payload),
+            content_type='application/json')
+        self.assertEquals(response.status_code, status.HTTP_400_BAD_REQUEST)
