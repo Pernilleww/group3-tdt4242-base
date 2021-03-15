@@ -143,9 +143,12 @@ window.addEventListener("DOMContentLoaded", async () => {
                 let workout = allWorkouts[j];
                 let workoutAnchor = workoutAnchors[j];
 
+                console.log(workout)
+
                 switch (event.currentTarget.id) {
                     case "list-my-logged-workouts-list":
                         if (workout.owner == currentUser.url && !workout.planned) {
+                            console.log(workout.owner)
                             workoutAnchor.classList.remove("hide");
                         } else {
                             workoutAnchor.classList.add("hide");
@@ -153,7 +156,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 
                         break;
                     case "list-my-planned-workouts-list":
-                        if (workout.owner == currentUser.url && workout.planned) {
+                        if (workout.owner == currentUser.ur && workout.planned) {
                             workoutAnchor.classList.remove("hide");
                         } else {
                             workoutAnchor.classList.add("hide");
@@ -195,6 +198,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 
                         })
                         if (athletes.includes(workout.athlete)) {
+                            console.log("hei")
                             workoutAnchor.classList.remove('hide');
                         } else {
                             workoutAnchor.classList.add('hide');

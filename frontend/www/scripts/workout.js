@@ -23,6 +23,7 @@ async function retrieveWorkout(id) {
 
         if (workoutData.planned) {
             plannedTitle = document.querySelector("#title-planned");
+            console.log(plannedTitle)
             plannedDescription = document.querySelector("#description-planned");
 
             plannedTitle.className = plannedTitle.className.replace("hide", "");
