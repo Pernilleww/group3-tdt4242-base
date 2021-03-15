@@ -401,34 +401,38 @@ window.addEventListener("DOMContentLoaded", async () => {
             postCommentButton.addEventListener("click", (async (id) => await createComment(id)).bind(undefined, id));
         }
     } else {
-        await createBlankExercise();
-
-
-        if (currentUser.athletes.length > 0) {
-            await selectAthletesForSuggest(currentUser);
-        } else {
-            let alert = createAlert("Will no be able to suggest workout due to not having any athltes", undefined);
-            document.body.prepend(alert);
-        }
-
-        setReadOnly(false, "#form-workout");
-        let ownerInput = document.querySelector("#inputOwner");
-        ownerInput.value = currentUser.username;
-        ownerInput.readOnly = !ownerInput.readOnly;
-
-        let dateInput = document.querySelector("#inputDateTime");
-        dateInput.readOnly = !dateInput.readOnly;
-
 
         coachTitle.className = coachTitle.className.replace("hide", "");
 
-        okWorkoutButton.className = okWorkoutButton.className.replace(" hide", "");
-        cancelWorkoutButton.className = cancelWorkoutButton.className.replace(" hide", "");
-        buttonAddExercise.className = buttonAddExercise.className.replace(" hide", "");
-        buttonRemoveExercise.className = buttonRemoveExercise.className.replace(" hide", "");
+        if (currentUser.athletes.length > 0) {
+            await selectAthletesForSuggest(currentUser);
+            await createBlankExercise();
 
-        okWorkoutButton.addEventListener("click", (async (currentUser) => await createSuggestWorkout(currentUser)).bind(undefined, currentUser));
-        cancelWorkoutButton.addEventListener("click", handleCancelDuringWorkoutCreate);
+
+            setReadOnly(false, "#form-workout");
+            let ownerInput = document.querySelector("#inputOwner");
+            ownerInput.value = currentUser.username;
+            ownerInput.readOnly = !ownerInput.readOnly;
+
+            let dateInput = document.querySelector("#inputDateTime");
+            dateInput.readOnly = !dateInput.readOnly;
+
+
+            coachTitle.className = coachTitle.className.replace("hide", "");
+
+            okWorkoutButton.className = okWorkoutButton.className.replace(" hide", "");
+            cancelWorkoutButton.className = cancelWorkoutButton.className.replace(" hide", "");
+            buttonAddExercise.className = buttonAddExercise.className.replace(" hide", "");
+            buttonRemoveExercise.className = buttonRemoveExercise.className.replace(" hide", "");
+
+            okWorkoutButton.addEventListener("click", (async (currentUser) => await createSuggestWorkout(currentUser)).bind(undefined, currentUser));
+            cancelWorkoutButton.addEventListener("click", handleCancelDuringWorkoutCreate);
+        } else {
+            let description = document.querySelector("#description-no-athletes");
+
+            description.className = description.className.replace("hide", "");
+
+        }
     }
 
 });
