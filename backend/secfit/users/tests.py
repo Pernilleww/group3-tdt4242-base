@@ -13,8 +13,10 @@ import json
 from unittest import skip
 import random
 
+
+
 '''
-    Serializer
+    Serializer tests
 '''
 
 class UserSerializerTestCase(APITestCase):
@@ -174,8 +176,9 @@ class UserSerializerTestCase(APITestCase):
 
 
 '''
-    Boundary values
+    Boundary value tests
 '''
+
 defaultDataRegister = {
         "username": "johnDoe", "email": "johnDoe@webserver.com", "password": "johnsPassword", "password1": "johnsPassword",  "phone_number": "11223344", "country": "Norway", "city": "Trondheim", "street_address": "Kongens gate 33"
     }
@@ -457,7 +460,6 @@ class PhoneBoundaryTestCase(TestCase):
             self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
-
 class CountryBoundaryTestCase(TestCase):
     def setUp(self):
         # Adds some randomness
@@ -528,7 +530,6 @@ class CountryBoundaryTestCase(TestCase):
             self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
-
 class CityBoundaryTestCase(TestCase):
     def setUp(self):
         # Adds some randomness
@@ -592,8 +593,6 @@ class CityBoundaryTestCase(TestCase):
             defaultDataRegister["city"]=x+"Oslo"
             response = self.client.post("/api/users/", defaultDataRegister)
             self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
-
 
 
 class Street_AdressBoundaryTestCase(TestCase):
@@ -668,12 +667,14 @@ class Street_AdressBoundaryTestCase(TestCase):
 
 
 
+
+
 '''
     2-way domain testing
 
     We will do the following:
     1. Define data, we will reuse the same data as in boundary values (ideally this could be automated so that all the data is only stored in one place, the validity could be set from the tests themselfs)
-    2. Do several loops to test the data togheter
+    2. Do several iterations to test the data togheter
     3. Return results
 '''
 

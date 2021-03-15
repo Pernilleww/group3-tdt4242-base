@@ -15,6 +15,10 @@ import pytz
 from rest_framework.request import Request
 
 
+'''
+    Test permmisions.py
+'''
+
 class WorkoutPermissionsTestCases(TestCase):
     def setUp(self):
         self.owner = get_user_model()(id=1, username='owner', email='email@email.com', phone_number='92134654',
@@ -267,8 +271,11 @@ class WorkoutPermissionsTestCases(TestCase):
             self, request=self.request, view=None, obj=None))
 
 
+
+
+
 '''
-    Boundary values
+    Boundary value tests
 '''
 defaultDataWorkout = {"name": "workoutname", "date": "2021-01-1T13:29:00.000Z", "notes": "notes",
                       "visibility": "PU", "planned": "false", "exercise_instances": [], "filename": []}
@@ -675,6 +682,14 @@ class Exercise_instancesBoundaryTestCase(TestCase):
                                     json.dumps(defaultDataWorkout), content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
+
+
+
+
+
+'''
+    Integration test new feature: UC1
+'''
 
 class IntegrationTestPlannedWorkout(APITestCase):
     def setUp(self):

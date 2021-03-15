@@ -10,8 +10,10 @@ from workouts.serializers import ExerciseSerializer
 from django.urls import reverse
 from suggested_workouts.views import createSuggestedWorkouts, detailedSuggestedWorkout
 from rest_framework import status
+
+
 """
-Integration testing for the functionality for UC2
+Integration testing for new feature: UC2
 """
 
 
@@ -23,7 +25,6 @@ urls.py are actually integrated and communicates as expected, but also that the 
 functions as expected together with the serializer, meaning that we test wheter the serializer is able
 to deserialize, serialize, updating and creating an instance of SuggestedWorkout.
 """
-
 
 class SuggestedWorkoutTestCase(APITestCase):
     def setUp(self):
