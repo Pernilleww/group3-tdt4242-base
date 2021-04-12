@@ -26,6 +26,7 @@ functions as expected together with the serializer, meaning that we test wheter 
 to deserialize, serialize, updating and creating an instance of SuggestedWorkout.
 """
 
+
 class SuggestedWorkoutTestCase(APITestCase):
     def setUp(self):
         self.factory = APIRequestFactory()
@@ -45,6 +46,8 @@ class SuggestedWorkoutTestCase(APITestCase):
         self.suggested_workout = SuggestedWorkout.objects.create(id=1, name='This is a suggested workout',
                                                                  date=timezone.now(), notes='Some notes', coach=self.coach, athlete=self.athlete, status='p')
         self.suggested_workout.save()
+        self.not_existing_suggested_workout_pk = self.suggested_workout.id + 1
+
         self.exercise_type = Exercise.objects.create(
             id=1, name='Plank', description='Train your core yall', unit='reps')
         self.exercise_type.save()
@@ -478,3 +481,8 @@ class SuggestedWorkoutTestCase(APITestCase):
         response = self.client.delete(
             reverse('suggested-workout-detail', kwargs={'pk': self.suggested_workout.id}))
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_returned_404_not_found(self):
+        response = self.client.delete(
+            reverse('suggested-workout-detail', kwargs={'pk': self.not_existing_suggested_workout_pk}))
+        self.assertEqual(response.status_code, 404)
