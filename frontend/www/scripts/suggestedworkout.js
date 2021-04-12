@@ -38,12 +38,6 @@ async function retrieveWorkout(id, currentUser) {
                 input.value = workoutData.coach;
             }
 
-            /*if (key == "date") {
-                // Creating a valid datetime-local string with the correct local time
-                let date = new Date(newVal);
-                date = new Date(date.getTime() - (date.getTimezoneOffset() * 60 * 1000)).toISOString(); // get ISO format for local time
-                newVal = date.substring(0, newVal.length - 1);    // remove Z (since this is a local time, not UTC)
-            }*/
             if (key != "suggested_workout_files") {
                 input.value = newVal;
             }
@@ -197,7 +191,6 @@ function generateWorkoutForm() {
     let date = new Date(formData.get('date')).toISOString();
     submitForm.append("date", date);
     submitForm.append("notes", formData.get("notes"));
-    //submitForm.append("owner", formData.get("coach_username"));
     submitForm.delete("athlete");
     submitForm.append("visibility", "CO");
 
@@ -231,8 +224,6 @@ function generateSuggestWorkoutForm() {
     let submitForm = new FormData();
 
     submitForm.append("name", formData.get('name'));
-    //let date = new Date(formData.get('date')).toISOString();
-    //submitForm.append("date", date);
     submitForm.append("notes", formData.get("notes"));
     submitForm.append("athlete", formData.get("athlete"));
     submitForm.append("status", "p");
