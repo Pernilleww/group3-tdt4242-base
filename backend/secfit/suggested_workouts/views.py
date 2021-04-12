@@ -9,6 +9,7 @@ from rest_framework.parsers import (
     JSONParser
 )
 from rest_framework.decorators import parser_classes
+from django.shortcuts import get_object_or_404
 """
 Handling post request of a new suggested workout instance. Handling update, delete and list exercises as well.
 """
@@ -75,7 +76,7 @@ View for both deleting,updating and retrieving a single workout.
 @parser_classes([MultipartJsonParser,
                  JSONParser])
 def detailedSuggestedWorkout(request, pk):
-    detailed_suggested_workout = SuggestedWorkout.objects.get(id=pk)
+    detailed_suggested_workout = get_object_or_404(SuggestedWorkout, pk=pk)
     if not request.user.id:
         return Response({"message": "Access denied."}, status=status.HTTP_401_UNAUTHORIZED)
     elif request.method == 'GET':
