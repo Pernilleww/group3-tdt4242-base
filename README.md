@@ -61,6 +61,7 @@ package.json - Some node.js requirements, this is needed for cordova
   - **workouts/** - application handling exercises and workouts
   - **manage.py** - entry point for running the project.
   - **seed.json** - contains seed data for the project to get it up and running quickly (coming soon)
+  - **Procfile**
 
 
 
