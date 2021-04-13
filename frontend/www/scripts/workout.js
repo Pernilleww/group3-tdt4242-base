@@ -494,15 +494,15 @@ window.addEventListener("DOMContentLoaded", async () => {
             );
             deleteWorkoutButton.addEventListener(
                 "click",
-                (async () => await deleteWorkout(id)).bind(undefined, id)
+                (async () =>  deleteWorkout(id)).bind(undefined, id)
             );
             okWorkoutButton.addEventListener(
                 "click",
-                (async () => await updateWorkout(id)).bind(undefined, id)
+                (async () =>  updateWorkout(id)).bind(undefined, id)
             );
             postCommentButton.addEventListener(
                 "click",
-                (async () => await createComment(id)).bind(undefined, id)
+                (async () =>  createComment(id)).bind(undefined, id)
             );
             divCommentRow.className = divCommentRow.className.replace(" hide", "");
         }
@@ -535,7 +535,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 
         okWorkoutButton.addEventListener(
             "click",
-            async () => await createWorkout()
+            async () =>  createWorkout()
         );
         cancelWorkoutButton.addEventListener(
             "click",
