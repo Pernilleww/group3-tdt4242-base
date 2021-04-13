@@ -316,7 +316,7 @@ function generateWorkoutForm() {
             number: exerciseInstancesNumbers[i],
             sets: exerciseInstancesSets[i],
         });
-    };
+    }
 
     submitForm.append("exercise_instances", JSON.stringify(exerciseInstances));
     // adding files
