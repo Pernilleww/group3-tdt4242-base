@@ -415,7 +415,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 
     okWorkoutButton.addEventListener(
       "click",
-      async () => await createWorkout()
+      async () => createWorkout()
     );
     cancelWorkoutButton.addEventListener(
       "click",
