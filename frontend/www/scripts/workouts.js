@@ -96,6 +96,68 @@ function planWorkout() {
     window.location.replace("plannedWorkout.html");
 }
 
+function showLoggedWorkouts(workout, currentUser, workoutAnchor) {
+    if (workout.owner == currentUser.url && !workout.planned) {
+        workoutAnchor.classList.remove("hide");
+    } else {
+        workoutAnchor.classList.add("hide");
+    }
+}
+
+function showPlannedWorkouts(workout, currentUser, workoutAnchor) {
+    if (workout.owner == currentUser.url && workout.planned) {
+        workoutAnchor.classList.remove("hide");
+    } else {
+        workoutAnchor.classList.add("hide");
+    }
+}
+
+function showPublicWorkouts(workout, workoutAnchor) {
+    if (workout.visibility == "PU") {
+        workoutAnchor.classList.remove("hide");
+    } else {
+        workoutAnchor.classList.add("hide");
+    }
+}
+
+function showAthleteWorkouts(workout, currentUser, workoutAnchor) {
+    if (
+        currentUser.athletes &&
+        currentUser.athletes.includes(workout.owner)
+    ) {
+        workoutAnchor.classList.remove("hide");
+    } else {
+        workoutAnchor.classList.add("hide");
+    }
+}
+
+function showSuggestedCoachWorkouts(workout, currentUser, workoutAnchor) {
+    if (currentUser.coach) {
+        let coachID = currentUser?.coach?.split('/');
+        if (coachID[coachID.length - 2] == workout.coach) {
+            workoutAnchor.classList.remove('hide');
+
+        }
+    } else {
+        workoutAnchor.classList.add('hide');
+    }
+}
+
+function showSuggestedAthleteWorkouts(workout, currentUser, workoutAnchor) {
+    let athletes = currentUser?.athletes?.map((athlete) => {
+        let athleteIdSplit = athlete.split('/');
+        return Number(athleteIdSplit[athleteIdSplit.length - 2]);
+
+    })
+    if (athletes.includes(workout.athlete)) {
+        workoutAnchor.classList.remove('hide');
+    } else {
+        workoutAnchor.classList.add('hide');
+    }
+}
+
+
+
 window.addEventListener("DOMContentLoaded", async () => {
     let createButton = document.querySelector("#btn-create-workout");
     let suggestButton = document.querySelector("#btn-suggest-workout");
@@ -110,7 +172,7 @@ window.addEventListener("DOMContentLoaded", async () => {
         let aSort = null;
         ordering = urlParams.get("ordering");
         if (ordering == "name" || ordering == "owner" || ordering == "date") {
-            let aSort = document.querySelector(`a[href="?ordering=${ordering}"`);
+            aSort = document.querySelector(`a[href="?ordering=${ordering}"`);
             aSort.href = `?ordering=-${ordering}`;
         }
     }
@@ -145,60 +207,22 @@ window.addEventListener("DOMContentLoaded", async () => {
 
                 switch (event.currentTarget.id) {
                     case "list-my-logged-workouts-list":
-                        if (workout.owner == currentUser.url && !workout.planned) {
-                            workoutAnchor.classList.remove("hide");
-                        } else {
-                            workoutAnchor.classList.add("hide");
-                        }
-
+                        showLoggedWorkouts(workout, currentUser, workoutAnchor)
                         break;
                     case "list-my-planned-workouts-list":
-                        if (workout.owner == currentUser.url && workout.planned) {
-                            workoutAnchor.classList.remove("hide");
-                        } else {
-                            workoutAnchor.classList.add("hide");
-                        }
-
+                        showPlannedWorkouts(workout, currentUser, workoutAnchor)
                         break;
                     case "list-athlete-workouts-list":
-                        if (
-                            currentUser.athletes &&
-                            currentUser.athletes.includes(workout.owner)
-                        ) {
-                            workoutAnchor.classList.remove("hide");
-                        } else {
-                            workoutAnchor.classList.add("hide");
-                        }
+                        showAthleteWorkouts(workout, currentUser, workoutAnchor)
                         break;
                     case "list-public-workouts-list":
-                        if (workout.visibility == "PU") {
-                            workoutAnchor.classList.remove("hide");
-                        } else {
-                            workoutAnchor.classList.add("hide");
-                        }
+                        showPublicWorkouts(workout, workoutAnchor)
                         break;
                     case "list-suggested-coach-workouts-list":
-                        if (currentUser.coach) {
-                            let coachID = currentUser?.coach?.split('/');
-                            if (coachID[coachID.length - 2] == workout.coach) {
-                                workoutAnchor.classList.remove('hide');
-
-                            }
-                        } else {
-                            workoutAnchor.classList.add('hide');
-                        }
+                        showCoachWorkouts(workout, currentUser, workoutAnchor)
                         break;
                     case "list-suggested-athlete-workouts-list":
-                        let athletes = currentUser?.athletes?.map((athlete) => {
-                            let athleteIdSplit = athlete.split('/');
-                            return Number(athleteIdSplit[athleteIdSplit.length - 2]);
-
-                        })
-                        if (athletes.includes(workout.athlete)) {
-                            workoutAnchor.classList.remove('hide');
-                        } else {
-                            workoutAnchor.classList.add('hide');
-                        }
+                        showSuggestedAthleteWorkouts(workout, currentUser, workoutAnchor)
                         break;
 
                     default :
