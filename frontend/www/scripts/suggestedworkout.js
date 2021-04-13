@@ -377,8 +377,8 @@ window.addEventListener("DOMContentLoaded", async () => {
 
             editWorkoutButton.classList.remove("hide");
             editWorkoutButton.addEventListener("click", handleEditWorkoutButtonClick);
-            deleteWorkoutButton.addEventListener("click", (async (id) => await deleteSuggestedWorkout(id)).bind(undefined, id));
-            okWorkoutButton.addEventListener("click", (async (id) => await updateWorkout(id)).bind(undefined, id));
+            deleteWorkoutButton.addEventListener("click", (async () => deleteSuggestedWorkout(id)).bind(undefined, id));
+            okWorkoutButton.addEventListener("click", (async () =>  updateWorkout(id)).bind(undefined, id));
         }
 
 
@@ -392,8 +392,8 @@ window.addEventListener("DOMContentLoaded", async () => {
             declineWorkoutButton.classList.remove("hide");
             acceptWorkoutButton.classList.remove("hide");
 
-            declineWorkoutButton.addEventListener("click", (async (id) => await deleteSuggestedWorkout(id)).bind(undefined, id));
-            acceptWorkoutButton.addEventListener("click", (async (id) => await acceptWorkout(id)).bind(undefined, id));
+            declineWorkoutButton.addEventListener("click", (async () =>  deleteSuggestedWorkout(id)).bind(undefined, id));
+            acceptWorkoutButton.addEventListener("click", (async () =>  acceptWorkout(id)).bind(undefined, id));
         }
     } else {
 
