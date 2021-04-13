@@ -350,7 +350,6 @@ function handleCancelDuringWorkoutCreate() {
 }
 
 async function createBlankExercise() {
-    let form = document.querySelector("#form-workout");
 
     let exerciseTypeResponse = await sendRequest("GET", `${HOST}/api/exercises/`);
     let exerciseTypes = await exerciseTypeResponse.json();
