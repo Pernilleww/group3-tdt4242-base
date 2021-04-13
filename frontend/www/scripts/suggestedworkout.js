@@ -49,7 +49,6 @@ async function retrieveWorkout(id, currentUser) {
             }
         }
 
-        let input = form.querySelector("select:disabled");
         // files
         let filesDiv = document.querySelector("#uploaded-files");
         for (let file of workoutData.suggested_workout_files) {
