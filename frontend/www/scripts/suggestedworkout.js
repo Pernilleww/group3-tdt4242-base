@@ -301,12 +301,12 @@ async function selectAthletesForSuggest(currentUser) {
     }
 
 
-    for (let i = 0; i < suggestTypes.length; i++) {
+    suggestTypes.forEach(item => {
         let option = document.createElement("option");
-        option.value = suggestTypes[i].id;
-        option.innerText = suggestTypes[i].username;
+        option.value = item.id;
+        option.innerText = item.username;
         suggestTypeSelect.append(option);
-    }
+    });
 
     let currentSuggestType = suggestTypes[0];
     suggestTypeSelect.value = currentSuggestType.id;
