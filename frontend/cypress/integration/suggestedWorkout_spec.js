@@ -168,7 +168,7 @@ describe('The Home Page', () => {
         cy.contains("Date must be a future date");
 
 
-        cy.get('input[name="date"]').type("2021-04-06T13:31");
+        cy.get('input[name="date"]').type("2021-11-06T13:31");
 
 
         cy.get("#btn-accept-workout").click();
