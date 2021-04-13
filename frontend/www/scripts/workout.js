@@ -465,7 +465,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     deleteWorkoutButton = document.querySelector("#btn-delete-workout");
     editWorkoutButton = document.querySelector("#btn-edit-workout");
     exportWorkoutButton = document.querySelector("#btn-export-workout");
-    let postCommentButton = document.querySelector("#post-comment");
+    postCommentButton = document.querySelector("#post-comment");
     let divCommentRow = document.querySelector("#div-comment-row");
     let buttonAddExercise = document.querySelector("#btn-add-exercise");
     let buttonRemoveExercise = document.querySelector("#btn-remove-exercise");
@@ -487,22 +487,22 @@ window.addEventListener("DOMContentLoaded", async () => {
             editWorkoutButton.addEventListener("click", handleEditWorkoutButtonClick);
             exportWorkoutButton.addEventListener(
                 "click",
-                ((workoutData) => handleExportToCalendarClick(workoutData)).bind(
+                (() => handleExportToCalendarClick(workoutData)).bind(
                     undefined,
                     workoutData
                 )
             );
             deleteWorkoutButton.addEventListener(
                 "click",
-                (async (id) => await deleteWorkout(id)).bind(undefined, id)
+                (async () => await deleteWorkout(id)).bind(undefined, id)
             );
             okWorkoutButton.addEventListener(
                 "click",
-                (async (id) => await updateWorkout(id)).bind(undefined, id)
+                (async () => await updateWorkout(id)).bind(undefined, id)
             );
             postCommentButton.addEventListener(
                 "click",
-                (async (id) => await createComment(id)).bind(undefined, id)
+                (async () => await createComment(id)).bind(undefined, id)
             );
             divCommentRow.className = divCommentRow.className.replace(" hide", "");
         }
