@@ -2,7 +2,6 @@ let cancelWorkoutButton;
 let okWorkoutButton;
 let deleteWorkoutButton;
 let editWorkoutButton;
-let postCommentButton;
 let acceptWorkoutButton;
 let declineWorkoutButton;
 let athleteTitle;
@@ -357,7 +356,6 @@ window.addEventListener("DOMContentLoaded", async () => {
     declineWorkoutButton = document.querySelector("#btn-decline-workout");
     coachTitle = document.querySelector("#coach-title");
     athleteTitle = document.querySelector("#athlete-title");
-    let postCommentButton = document.querySelector("#post-comment");
     let buttonAddExercise = document.querySelector("#btn-add-exercise");
     let buttonRemoveExercise = document.querySelector("#btn-remove-exercise");
 
@@ -381,7 +379,6 @@ window.addEventListener("DOMContentLoaded", async () => {
             editWorkoutButton.addEventListener("click", handleEditWorkoutButtonClick);
             deleteWorkoutButton.addEventListener("click", (async (id) => await deleteSuggestedWorkout(id)).bind(undefined, id));
             okWorkoutButton.addEventListener("click", (async (id) => await updateWorkout(id)).bind(undefined, id));
-            postCommentButton.addEventListener("click", (async (id) => await createComment(id)).bind(undefined, id));
         }
 
 
@@ -397,7 +394,6 @@ window.addEventListener("DOMContentLoaded", async () => {
 
             declineWorkoutButton.addEventListener("click", (async (id) => await deleteSuggestedWorkout(id)).bind(undefined, id));
             acceptWorkoutButton.addEventListener("click", (async (id) => await acceptWorkout(id)).bind(undefined, id));
-            postCommentButton.addEventListener("click", (async (id) => await createComment(id)).bind(undefined, id));
         }
     } else {
 
