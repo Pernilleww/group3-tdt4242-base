@@ -420,7 +420,7 @@ window.addEventListener("DOMContentLoaded", async () => {
             buttonAddExercise.className = buttonAddExercise.className.replace(" hide", "");
             buttonRemoveExercise.className = buttonRemoveExercise.className.replace(" hide", "");
 
-            okWorkoutButton.addEventListener("click", (async () =>  createSuggestWorkout(currentUser)).bind(undefined, currentUser));
+            okWorkoutButton.addEventListener("click", (async () =>  createSuggestWorkout()).bind(undefined));
             cancelWorkoutButton.addEventListener("click", handleCancelDuringWorkoutCreate);
         } else {
             let description = document.querySelector("#description-no-athletes");
