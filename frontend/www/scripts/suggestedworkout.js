@@ -103,7 +103,8 @@ async function retrieveWorkout(id, currentUser) {
             exerciseSetInput.readOnly = true;
 
             let exerciseNumberLabel = divExerciseContainer.querySelector('.exercise-number');
-            exerciseNumberLabel.for = `for`, `inputNumber${i}`;
+            exerciseNumberLabel.for = `inputNumber${i}`;
+            console.log(exerciseNumberLabel)
             exerciseNumberLabel.innerText = currentExerciseType.unit;
 
             let exerciseNumberInput = divExerciseContainer.querySelector("input[name='number']");
