@@ -117,8 +117,6 @@ class OfferList(
 
     def get_queryset(self):
         qs = Offer.objects.none()
-        result = Offer.objects.none()
-
         if self.request.user:
             qs = Offer.objects.filter(
                 Q(owner=self.request.user) | Q(recipient=self.request.user)
@@ -133,9 +131,7 @@ class OfferList(
             # filtering by category (sent or received)
             c = qp.get("category", None)
             qs = self.filter_by_category(qs, u, c, qp)
-            return qs
-        else:
-            return result
+        return qs
 
 
 class OfferDetail(
