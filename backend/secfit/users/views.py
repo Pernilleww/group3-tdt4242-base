@@ -100,33 +100,73 @@ class OfferList(
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
 
-    def filter_by_status(self, qs, status):
-        qs = qs.filter(status=status)
+    def filter_by_status(self, qs, s, u):
+        if s:
+            qs = qs.filter(status=s)
+        else:
+            qs = Offer.objects.filter(Q(owner=u)).distinct()
         return qs
 
-    def filter_by_category(self, qs, user, category):
-        if category == "sent":
-            qs = qs.filter(owner=user)
-        elif category == "received":
-            qs = qs.filter(recipient=user)
+    def filter_by_category(self, qs, u, c, qp):
+        if c and qp:
+            if c == "sent":
+                qs = qs.filter(owner=u)
+            elif c == "received":
+                qs = qs.filter(recipient=u)
         return qs
 
     def get_queryset(self):
-        qs = Offer.objects.filter(
-            Q(owner=self.request.user) | Q(recipient=self.request.user)
-        ).distinct()
-        qp = self.request.query_params
-        u = self.request.user
-        qs = Offer.objects.filter(Q(owner=u)).distinct()
-        # filtering by status (if provided)
-        s = qp.get("status", None)
-        if qp and s:
-            qs = self.filter_by_status(qs, s)
-        # filtering by category (sent or received)
-        c = qp.get("category", None)
-        if qp and c:
-            qs = self.filter_by_category(qs, u, c)
-        return qs
+        qs = Offer.objects.none()
+        result = Offer.objects.none()
+
+        if self.request.user:
+            qs = Offer.objects.filter(
+                Q(owner=self.request.user) | Q(recipient=self.request.user)
+            ).distinct()
+            qp = self.request.query_params
+            u = self.request.user
+
+            # filtering by status (if provided)
+            s = qp.get("status", None)
+            qs = self.filter_by_status(qs, s, u)
+
+            # filtering by category (sent or received)
+            c = qp.get("category", None)
+            qs = self.filter_by_category(qs, u, c, qp)
+            return qs
+        else:
+            return result
+
+
+"""
+    def get_queryset(self):
+        qs = Offer.objects.none()
+        result = Offer.objects.none()
+
+        if self.request.user:
+            qs = Offer.objects.filter(
+                Q(owner=self.request.user) | Q(recipient=self.request.user)
+            ).distinct()
+            qp = self.request.query_params
+            u = self.request.user
+
+            # filtering by status (if provided)
+            s = qp.get("status", None)
+            if s is not None and self.request is not None:
+                qs = qs.filter(status=s)
+                if qp.get("status", None) is None:
+                    qs = Offer.objects.filter(Q(owner=u)).distinct()
+
+            # filtering by category (sent or received)
+            c = qp.get("category", None)
+            if c is not None and qp is not None:
+                if c == "sent":
+                    qs = qs.filter(owner=u)
+                elif c == "received":
+                    qs = qs.filter(recipient=u)
+            return qs
+        else:
+"""
 
 
 class OfferDetail(
