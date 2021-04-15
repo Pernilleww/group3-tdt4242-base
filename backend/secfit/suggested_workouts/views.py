@@ -62,8 +62,6 @@ def listAllSuggestedWorkouts(request):
         suggested_workouts, many=True, context={'request': request})
     if not request.user.id:
         return Response({"message": "You have to log in to see this information."}, status=status.HTTP_401_UNAUTHORIZED)
-    # elif((request.user.id,) not in list(SuggestedWorkout.objects.values_list('coach')) or (request.user.id,) not in list(SuggestedWorkout.objects.values_list('athlete'))):
-    #     return Response({"message": "You must either be a coach or athlete of the suggested workouts to see this information."}, status=status.HTTP_401_UNAUTHORIZED)
     return Response(data=serializer.data, status=status.HTTP_200_OK)
 
 

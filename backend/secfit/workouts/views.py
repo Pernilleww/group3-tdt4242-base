@@ -274,13 +274,6 @@ class ExerciseInstanceDetail(
 ):
     queryset = ExerciseInstance.objects.all()
     serializer_class = ExerciseInstanceSerializer
-    # permission_classes = [
-    #    permissions.IsAuthenticated
-    #    & (
-    #       IsOwnerOfWorkout
-    # | (IsReadOnly & (IsCoachOfWorkoutAndVisibleToCoach | IsWorkoutPublic))
-    #    )
-   # ]
 
     def get(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
