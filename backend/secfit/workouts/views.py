@@ -133,6 +133,17 @@ class WorkoutList(
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
 
+    def handleExpiredPlannedWorkouts(self, qs):
+        timeNow = datetime.now()
+        timeNowAdjusted = pytz.utc.localize(timeNow)
+        for i in range(0, len(qs)):
+            if qs[i].planned:
+                if timeNowAdjusted > qs[i].date:
+                    # Update: set planned to false
+                    qs[i].planned = False
+                    qs[i].save()
+        return qs
+
     def get_queryset(self):
         qs = Workout.objects.none()
         if self.request.user:
@@ -144,19 +155,10 @@ class WorkoutList(
                 Q(visibility="PU")
                 | Q(owner=self.request.user)
                 | (Q(visibility="CO") & Q(owner__coach=self.request.user))
-                | (Q(visibility= "PR") & Q(owner=self.request.user))
+                | (Q(visibility="PR") & Q(owner=self.request.user))
             ).distinct()
             # Check if the planned workout has happened
-            if len(qs) > 0:
-                timeNow = datetime.now()
-                timeNowAdjusted = pytz.utc.localize(timeNow)
-                for i in range(0, len(qs)):
-                    if qs[i].planned:
-                        if timeNowAdjusted > qs[i].date:
-                            # Update: set planned to false
-                            qs[i].planned = False
-                            qs[i].save()
-
+            qs = self.handleExpiredPlannedWorkouts(qs)
         return qs
 
 
