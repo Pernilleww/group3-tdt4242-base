@@ -9,7 +9,6 @@ MAX_CONN_AGE = 600
 def settings(config, *, db_colors=False, databases=True, test_runner=False, staticfiles=True, allowed_hosts=True,
              logging=True, secret_key=True):
     # Database configuration.
-    # TODO: support other database (e.g. TEAL, AMBER, etc, automatically.)
     if databases:
         # Integrity check.
         if 'DATABASES' not in config:
@@ -19,7 +18,7 @@ def settings(config, *, db_colors=False, databases=True, test_runner=False, stat
 
         if db_colors:
             # Support all Heroku databases.
-            # TODO: This appears to break TestRunner.
+
             for (env, url) in os.environ.items():
                 if env.startswith('HEROKU_POSTGRESQL'):
                     db_color = env[len('HEROKU_POSTGRESQL_'):].split('_')[0]
