@@ -4,6 +4,8 @@ let deleteWorkoutButton;
 let editWorkoutButton;
 let acceptWorkoutButton;
 let declineWorkoutButton;
+let buttonAddExercise;
+let buttonRemoveExercise;
 let athleteTitle;
 let coachTitle;
 
@@ -90,7 +92,7 @@ async function showExercisesInDiv(workoutData){
         for (let j = 0; j < exerciseTypes.count; j++) {
             let option = document.createElement("option");
             option.value = exerciseTypes.results[j].id;
-            if (currentExerciseTypeId == exerciseTypes.results[j].id) {
+            if (currentExerciseTypeId === exerciseTypes.results[j].id) {
                 currentExerciseType = exerciseTypes.results[j];
             }
             option.innerText = exerciseTypes.results[j].name;
@@ -253,7 +255,7 @@ function generateSuggestWorkoutForm() {
 
     submitForm.append("suggested_exercise_instances", JSON.stringify(exerciseInstances));
     for (let file of formData.getAll("files")) {
-        if (file.name != "") {
+        if (file.name !== "") {
             submitForm.append("suggested_workout_files", file);
         }
     }
@@ -343,8 +345,7 @@ function removeExercise(event) {
     }
 }
 
-
-window.addEventListener("DOMContentLoaded", async () => {
+function defineButtons(){
     cancelWorkoutButton = document.querySelector("#btn-cancel-workout");
     okWorkoutButton = document.querySelector("#btn-ok-workout");
     deleteWorkoutButton = document.querySelector("#btn-delete-workout");
@@ -353,44 +354,77 @@ window.addEventListener("DOMContentLoaded", async () => {
     declineWorkoutButton = document.querySelector("#btn-decline-workout");
     coachTitle = document.querySelector("#coach-title");
     athleteTitle = document.querySelector("#athlete-title");
-    let buttonAddExercise = document.querySelector("#btn-add-exercise");
-    let buttonRemoveExercise = document.querySelector("#btn-remove-exercise");
+    buttonAddExercise = document.querySelector("#btn-add-exercise");
+    buttonRemoveExercise = document.querySelector("#btn-remove-exercise");
 
     buttonAddExercise.addEventListener("click", createBlankExercise);
     buttonRemoveExercise.addEventListener("click", removeExercise);
+}
+
+function existingCoachForm(id){
+    coachTitle.className = coachTitle.className.replace("hide", "");
+
+
+    editWorkoutButton.classList.remove("hide");
+    editWorkoutButton.addEventListener("click", handleEditWorkoutButtonClick);
+    deleteWorkoutButton.addEventListener("click", (async () =>  deleteSuggestedWorkout(id)).bind(undefined, id));
+    okWorkoutButton.addEventListener("click", (async () =>  updateWorkout(id)).bind(undefined, id));
+}
+
+
+function existingAthleteForm(id){
+    athleteTitle.className = athleteTitle.className.replace("hide", "");
+    setReadOnly(false, "#form-workout");
+
+    document.querySelector("#inputOwner").readOnly = true;
+
+
+    declineWorkoutButton.classList.remove("hide");
+    acceptWorkoutButton.classList.remove("hide");
+
+    declineWorkoutButton.addEventListener("click", (async () =>  deleteSuggestedWorkout(id)).bind(undefined, id));
+    acceptWorkoutButton.addEventListener("click", (async () =>  acceptWorkout(id)).bind(undefined, id));
+}
+
+function coachForm(currentUser){
+
+    setReadOnly(false, "#form-workout");
+    let ownerInput = document.querySelector("#inputOwner");
+    ownerInput.value = currentUser.username;
+    ownerInput.readOnly = !ownerInput.readOnly;
+
+    let dateInput = document.querySelector("#inputDateTime");
+    dateInput.readOnly = !dateInput.readOnly;
+
+
+    coachTitle.className = coachTitle.className.replace("hide", "");
+
+    okWorkoutButton.className = okWorkoutButton.className.replace(" hide", "");
+    cancelWorkoutButton.className = cancelWorkoutButton.className.replace(" hide", "");
+    buttonAddExercise.className = buttonAddExercise.className.replace(" hide", "");
+    buttonRemoveExercise.className = buttonRemoveExercise.className.replace(" hide", "");
+
+    okWorkoutButton.addEventListener("click", (async () =>  createSuggestWorkout(currentUser)).bind(undefined, currentUser));
+    cancelWorkoutButton.addEventListener("click", handleCancelDuringWorkoutCreate);
+}
+
+window.addEventListener("DOMContentLoaded", async () => {
+    defineButtons();
 
     const urlParams = new URLSearchParams(window.location.search);
     let currentUser = await getCurrentUser();
-
 
     if (urlParams.has('id')) {
         const id = urlParams.get('id');
         let workoutData = await retrieveWorkout(id, currentUser);
 
 
-        if (workoutData["coach"] == currentUser.id) {
-            coachTitle.className = coachTitle.className.replace("hide", "");
-
-
-            editWorkoutButton.classList.remove("hide");
-            editWorkoutButton.addEventListener("click", handleEditWorkoutButtonClick);
-            deleteWorkoutButton.addEventListener("click", (async () => deleteSuggestedWorkout(id)).bind(undefined, id));
-            okWorkoutButton.addEventListener("click", (async () =>  updateWorkout(id)).bind(undefined, id));
+        if (workoutData["coach"] === currentUser.id) {
+           existingCoachForm(id);
         }
 
-
-        if (workoutData["athlete"] == currentUser.id) {
-            athleteTitle.className = athleteTitle.className.replace("hide", "");
-            setReadOnly(false, "#form-workout");
-
-            document.querySelector("#inputOwner").readOnly = true;
-
-
-            declineWorkoutButton.classList.remove("hide");
-            acceptWorkoutButton.classList.remove("hide");
-
-            declineWorkoutButton.addEventListener("click", (async () =>  deleteSuggestedWorkout(id)).bind(undefined, id));
-            acceptWorkoutButton.addEventListener("click", (async () =>  acceptWorkout(id)).bind(undefined, id));
+        if (workoutData["athlete"] === currentUser.id) {
+            existingAthleteForm(id);
         }
     } else {
 
@@ -400,25 +434,8 @@ window.addEventListener("DOMContentLoaded", async () => {
             await selectAthletesForSuggest(currentUser);
             await createBlankExercise();
 
+            coachForm(currentUser)
 
-            setReadOnly(false, "#form-workout");
-            let ownerInput = document.querySelector("#inputOwner");
-            ownerInput.value = currentUser.username;
-            ownerInput.readOnly = !ownerInput.readOnly;
-
-            let dateInput = document.querySelector("#inputDateTime");
-            dateInput.readOnly = !dateInput.readOnly;
-
-
-            coachTitle.className = coachTitle.className.replace("hide", "");
-
-            okWorkoutButton.className = okWorkoutButton.className.replace(" hide", "");
-            cancelWorkoutButton.className = cancelWorkoutButton.className.replace(" hide", "");
-            buttonAddExercise.className = buttonAddExercise.className.replace(" hide", "");
-            buttonRemoveExercise.className = buttonRemoveExercise.className.replace(" hide", "");
-
-            okWorkoutButton.addEventListener("click", (async () =>  createSuggestWorkout()).bind(undefined));
-            cancelWorkoutButton.addEventListener("click", handleCancelDuringWorkoutCreate);
         } else {
             let description = document.querySelector("#description-no-athletes");
 
