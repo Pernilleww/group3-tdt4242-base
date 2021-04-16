@@ -55,13 +55,10 @@ async function retrieveWorkout(id, currentUser) {
             filesDiv.appendChild(a);
         }
 
-        // create exercises
 
-        // fetch exercise types
         let exerciseTypeResponse = await sendRequest("GET", `${HOST}/api/exercises/`);
         let exerciseTypes = await exerciseTypeResponse.json();
 
-        //TODO: This should be in its own method.
         for (let i = 0; i < workoutData.suggested_exercise_instances.length; i++) {
             let templateExercise = document.querySelector("#template-exercise");
             let divExerciseContainer = templateExercise.content.firstElementChild.cloneNode(true);
@@ -194,7 +191,6 @@ function generateWorkoutForm() {
     submitForm.delete("athlete");
     submitForm.append("visibility", "CO");
 
-    // adding exercise instances
     let exerciseInstances = [];
     let exerciseInstancesTypes = formData.getAll("type");
     let exerciseInstancesSets = formData.getAll("sets");
@@ -208,7 +204,6 @@ function generateWorkoutForm() {
     }
 
     submitForm.append("exercise_instances", JSON.stringify(exerciseInstances));
-    // adding files
     for (let file of formData.getAll("files")) {
         submitForm.append("suggested_workout_files", file);
     }
@@ -230,7 +225,6 @@ function generateSuggestWorkoutForm() {
 
 
 
-    // adding exercise instances
     let exerciseInstances = [];
     let exerciseInstancesTypes = formData.getAll("type");
     let exerciseInstancesSets = formData.getAll("sets");
@@ -245,7 +239,6 @@ function generateSuggestWorkoutForm() {
     }
 
     submitForm.append("suggested_exercise_instances", JSON.stringify(exerciseInstances));
-    // adding files
     for (let file of formData.getAll("files")) {
         if (file.name != "") {
             submitForm.append("suggested_workout_files", file);
@@ -422,7 +415,6 @@ window.addEventListener("DOMContentLoaded", async () => {
             let description = document.querySelector("#description-no-athletes");
 
             description.className = description.className.replace("hide", "");
-
         }
     }
 

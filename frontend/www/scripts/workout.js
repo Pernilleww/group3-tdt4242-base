@@ -232,7 +232,6 @@ function exportCSVFile(headers, items, fileTitle) {
         items.unshift(headers);
     }
 
-    // Convert Object to JSON
     var jsonObject = JSON.stringify(items);
 
     var csv = this.convertToCSV(jsonObject);
@@ -319,7 +318,6 @@ function generateWorkoutForm() {
     };
 
     submitForm.append("exercise_instances", JSON.stringify(exerciseInstances));
-    // adding files
     for (let file of formData.getAll("files")) {
         submitForm.append("files", file);
     }
