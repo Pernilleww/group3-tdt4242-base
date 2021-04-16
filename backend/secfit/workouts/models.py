@@ -27,20 +27,6 @@ class OverwriteStorage(FileSystemStorage):
 
 
 class Workout(models.Model):
-    """Django model for a workout that users can log.
-
-    A workout has several attributes, and is associated with one or more exercises
-    (instances) and, optionally, files uploaded by the user.
-
-    Attributes:
-        name:        Name of the workout
-        date:        Date the workout was performed or is planned
-        notes:       Notes about the workout
-        owner:       User that logged the workout
-        visibility:  The visibility level of the workout: Public, Coach, or Private
-        planned:     Indicates if it is a planned workout
-    """
-
     name = models.CharField(max_length=100)
     date = models.DateTimeField()
     notes = models.TextField()
@@ -70,16 +56,6 @@ class Workout(models.Model):
         return self.name
 
 class Exercise(models.Model):
-    """Django model for an exercise type that users can create.
-
-    Each exercise instance must have an exercise type, e.g., Pushups, Crunches, or Lunges.
-
-    Attributes:
-        name:        Name of the exercise type
-        description: Description of the exercise type
-        unit:        Name of the unit for the exercise type (e.g., reps, seconds)
-    """
-
     name = models.CharField(max_length=100)
     description = models.TextField()
     unit = models.CharField(max_length=50)
@@ -89,21 +65,6 @@ class Exercise(models.Model):
 
 
 class ExerciseInstance(models.Model):
-    """Django model for an instance of an exercise.
-
-    Each workout has one or more exercise instances, each of a given type. For example,
-    Kyle's workout on 15.06.2029 had one exercise instance: 3 (sets) reps (unit) of
-    10 (number) pushups (exercise type)
-
-    Each suggested workouts shall also have a relation with one or more exercise instances just like a regular workout.
-
-    Attributes:
-        workout:    The workout associated with this exercise instance
-        exercise:   The exercise type of this instance
-        sets:       The number of sets the owner will perform/performed
-        number:     The number of repetitions in each set the owner will perform/performed
-    """
-
     workout = models.ForeignKey(
         Workout, on_delete=models.CASCADE, related_name="exercise_instances", null=True
     )
@@ -134,15 +95,6 @@ def workout_directory_path(instance, filename):
 
 
 class WorkoutFile(models.Model):
-    """Django model for file associated with a workout or a suggested workout. Basically a wrapper.
-
-    Attributes:
-        workout: The workout for which this file has been uploaded
-        suggested_workout: The suggested workout for which the file has been uploaded
-        owner:   The user who uploaded the file
-        file:    The actual file that's being uploaded
-    """
-
     workout = models.ForeignKey(
         Workout, on_delete=models.CASCADE, related_name="files", null=True, blank=True)
     suggested_workout = models.ForeignKey(
@@ -154,12 +106,6 @@ class WorkoutFile(models.Model):
 
 
 class RememberMe(models.Model):
-    """Django model for an remember_me cookie used for remember me functionality.
-
-    Attributes:
-        remember_me:        Value of cookie used for remember me
-    """
-
     remember_me = models.CharField(max_length=500)
 
     def __str__(self):
