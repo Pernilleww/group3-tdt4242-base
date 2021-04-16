@@ -66,7 +66,6 @@ async function fetchSuggestedWorkouts() {
             let h5 = aWorkout.querySelector("h5");
             h5.textContent = workout.name;
 
-            //let localDate = new Date(workout.date);
 
             let table = aWorkout.querySelector("table");
             let rows = table.querySelectorAll("tr");

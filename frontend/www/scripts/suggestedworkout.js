@@ -7,8 +7,6 @@ let declineWorkoutButton;
 let athleteTitle;
 let coachTitle;
 
-
-
 async function retrieveWorkout(id, currentUser) {
     let workoutData = null;
     let response = await sendRequest("GET", `${HOST}/api/suggested-workout/${id}/`);
@@ -74,9 +72,9 @@ async function showExercisesInDiv(workoutData){
     let exerciseTypeResponse = await sendRequest("GET", `${HOST}/api/exercises/`);
     let exerciseTypes = await exerciseTypeResponse.json();
 
-    for (let i = 0; i < workoutData.suggested_exercise_instances.length; i++) {
-        let templateExercise = document.querySelector("#template-exercise");
-        let divExerciseContainer = templateExercise.content.firstElementChild.cloneNode(true);
+        for (let i = 0; i < workoutData.suggested_exercise_instances.length; i++) {
+            let templateExercise = document.querySelector("#template-exercise");
+            let divExerciseContainer = templateExercise.content.firstElementChild.cloneNode(true);
 
         let exerciseTypeLabel = divExerciseContainer.querySelector('.exercise-type');
         exerciseTypeLabel.for = `inputExerciseType${i}`;
@@ -203,11 +201,9 @@ function generateWorkoutForm() {
     let date = new Date(formData.get('date')).toISOString();
     submitForm.append("date", date);
     submitForm.append("notes", formData.get("notes"));
-    //submitForm.append("owner", formData.get("coach_username"));
     submitForm.delete("athlete");
     submitForm.append("visibility", "CO");
 
-    // adding exercise instances
     let exerciseInstances = [];
     let exerciseInstancesTypes = formData.getAll("type");
     let exerciseInstancesSets = formData.getAll("sets");
@@ -221,7 +217,6 @@ function generateWorkoutForm() {
     }
 
     submitForm.append("exercise_instances", JSON.stringify(exerciseInstances));
-    // adding files
     for (let file of formData.getAll("files")) {
         submitForm.append("suggested_workout_files", file);
     }
@@ -237,15 +232,12 @@ function generateSuggestWorkoutForm() {
     let submitForm = new FormData();
 
     submitForm.append("name", formData.get('name'));
-    //let date = new Date(formData.get('date')).toISOString();
-    //submitForm.append("date", date);
     submitForm.append("notes", formData.get("notes"));
     submitForm.append("athlete", formData.get("athlete"));
     submitForm.append("status", "p");
 
 
 
-    // adding exercise instances
     let exerciseInstances = [];
     let exerciseInstancesTypes = formData.getAll("type");
     let exerciseInstancesSets = formData.getAll("sets");
@@ -260,7 +252,6 @@ function generateSuggestWorkoutForm() {
     }
 
     submitForm.append("suggested_exercise_instances", JSON.stringify(exerciseInstances));
-    // adding files
     for (let file of formData.getAll("files")) {
         if (file.name != "") {
             submitForm.append("suggested_workout_files", file);
@@ -432,7 +423,6 @@ window.addEventListener("DOMContentLoaded", async () => {
             let description = document.querySelector("#description-no-athletes");
 
             description.className = description.className.replace("hide", "");
-
         }
     }
 
