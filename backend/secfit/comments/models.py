@@ -9,8 +9,6 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from workouts.models import Workout
 from django.utils import timezone
-# Create your models here.
-
 
 class Comment(models.Model):
     """Django model for a comment left on a workout.

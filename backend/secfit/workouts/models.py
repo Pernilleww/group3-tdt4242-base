@@ -26,7 +26,6 @@ class OverwriteStorage(FileSystemStorage):
             os.remove(os.path.join(settings.MEDIA_ROOT, name))
 
 
-# Create your models here.
 class Workout(models.Model):
     """Django model for a workout that users can log.
 

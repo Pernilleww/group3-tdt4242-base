@@ -8,7 +8,6 @@ from comments.serializers import CommentSerializer, LikeSerializer
 from django.db.models import Q
 from rest_framework.filters import OrderingFilter
 
-# Create your views here.
 class CommentList(
     mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericAPIView
 ):

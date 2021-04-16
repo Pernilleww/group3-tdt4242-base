@@ -23,7 +23,6 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from users.permissions import IsCurrentUser, IsAthlete, IsCoach
 from workouts.permissions import IsOwner, IsReadOnly
 
-# Create your views here.
 class UserList(mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericAPIView):
     serializer_class = UserSerializer
     users = []
