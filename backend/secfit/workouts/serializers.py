@@ -56,20 +56,6 @@ class WorkoutFileSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class WorkoutSerializer(serializers.HyperlinkedModelSerializer):
-    """Serializer for a Workout. Hyperlinks are used for relationships by default.
-
-    This serializer specifies nested serialization since a workout consists of WorkoutFiles
-    and ExerciseInstances.
-
-    Serialized fields: url, id, name, date, notes, owner, planned, owner_username, visiblity,
-                       exercise_instances, files
-
-    Attributes:
-        owner_username:     Username of the owning User
-        exercise_instance:  Serializer for ExericseInstances
-        files:              Serializer for WorkoutFiles
-    """
-
     owner_username = serializers.SerializerMethodField()
     exercise_instances = ExerciseInstanceSerializer(many=True, required=True)
     files = WorkoutFileSerializer(many=True, required=False)
@@ -92,17 +78,6 @@ class WorkoutSerializer(serializers.HyperlinkedModelSerializer):
         extra_kwargs = {"owner": {"read_only": True}}
 
     def create(self, validated_data):
-        """Custom logic for creating ExerciseInstances, WorkoutFiles, and a Workout.
-
-        This is needed to iterate over the files and exercise instances, since this serializer is
-        nested.
-
-        Args:
-            validated_data: Validated files and exercise_instances
-
-        Returns:
-            Workout: A newly created Workout
-        """
         # Check if date is valid
         timeNow = datetime.now()
         timeNowAdjusted = pytz.utc.localize(timeNow)
@@ -135,18 +110,6 @@ class WorkoutSerializer(serializers.HyperlinkedModelSerializer):
         return workout
 
     def update(self, instance, validated_data):
-        """Custom logic for updating a Workout with its ExerciseInstances and Workouts.
-
-        This is needed because each object in both exercise_instances and files must be iterated
-        over and handled individually.
-
-        Args:
-            instance (Workout): Current Workout object
-            validated_data: Contains data for validated fields
-
-        Returns:
-            Workout: Updated Workout instance
-        """
         # Add date and planned check
         # Check if date is valid
         timeNow = datetime.now()
@@ -228,26 +191,10 @@ class WorkoutSerializer(serializers.HyperlinkedModelSerializer):
         return instance
 
     def get_owner_username(self, obj):
-        """Returns the owning user's username
-
-        Args:
-            obj (Workout): Current Workout
-
-        Returns:
-            str: Username of owner
-        """
         return obj.owner.username
 
 
 class ExerciseSerializer(serializers.HyperlinkedModelSerializer):
-    """Serializer for an Exercise. Hyperlinks are used for relationships by default.
-
-    Serialized fields: url, id, name, description, unit, instances
-
-    Attributes:
-        instances:  Associated exercise instances with this Exercise type. Hyperlinks.
-    """
-
     instances = serializers.HyperlinkedRelatedField(
         many=True, view_name="exerciseinstance-detail", read_only=True
     )
@@ -258,14 +205,6 @@ class ExerciseSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class RememberMeSerializer(serializers.HyperlinkedModelSerializer):
-    """Serializer for an RememberMe. Hyperlinks are used for relationships by default.
-
-    Serialized fields: remember_me
-
-    Attributes:
-        remember_me:    Value of cookie used for remember me functionality
-    """
-
     class Meta:
         model = RememberMe
         fields = ["remember_me"]

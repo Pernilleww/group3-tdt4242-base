@@ -54,7 +54,6 @@ class CommentList(
 
         return qs
 
-# Details of comment
 class CommentDetail(
     mixins.RetrieveModelMixin,
     mixins.UpdateModelMixin,
@@ -77,7 +76,6 @@ class CommentDetail(
         return self.destroy(request, *args, **kwargs)
 
 
-# List of likes
 class LikeList(mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericAPIView):
     serializer_class = LikeSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -95,7 +93,6 @@ class LikeList(mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericA
         return Like.objects.filter(owner=self.request.user)
 
 
-# Details of like
 class LikeDetail(
     mixins.RetrieveModelMixin,
     mixins.UpdateModelMixin,

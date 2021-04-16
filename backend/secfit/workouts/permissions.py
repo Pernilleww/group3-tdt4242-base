@@ -5,15 +5,11 @@ from workouts.models import Workout
 
 
 class IsOwner(permissions.BasePermission):
-    """Checks whether the requesting user is also the owner of the existing object"""
-
     def has_object_permission(self, request, view, obj):
         return obj.owner == request.user
 
 
 class IsOwnerOfWorkout(permissions.BasePermission):
-    """Checks whether the requesting user is also the owner of the new or existing object"""
-
     def has_permission(self, request, view):
         if request.method == "POST":
             if request.data.get("workout"):
@@ -30,9 +26,6 @@ class IsOwnerOfWorkout(permissions.BasePermission):
 
 
 class IsCoachAndVisibleToCoach(permissions.BasePermission):
-    """Checks whether the requesting user is the existing object's owner's coach
-    and whether the object (workout) has a visibility of Public or Coach.
-    """
     # Fixed bug where the function did not check for the visibility level
 
     def has_object_permission(self, request, view, obj):
@@ -40,10 +33,6 @@ class IsCoachAndVisibleToCoach(permissions.BasePermission):
 
 
 class IsCoachOfWorkoutAndVisibleToCoach(permissions.BasePermission):
-    """Checks whether the requesting user is the existing workout's owner's coach
-    and whether the object has a visibility of Public or Coach.
-    """
-
     def has_object_permission(self, request, view, obj):
         # Fixed bug where the function did not check for the visibility level
         return obj.workout.owner.coach == request.user and (
@@ -52,21 +41,15 @@ class IsCoachOfWorkoutAndVisibleToCoach(permissions.BasePermission):
 
 
 class IsPublic(permissions.BasePermission):
-    """Checks whether the object (workout) has visibility of Public."""
-
     def has_object_permission(self, request, view, obj):
         return obj.visibility == "PU"
 
 
 class IsWorkoutPublic(permissions.BasePermission):
-    """Checks whether the object's workout has visibility of Public."""
-
     def has_object_permission(self, request, view, obj):
         return obj.workout.visibility == "PU"
 
 
 class IsReadOnly(permissions.BasePermission):
-    """Checks whether the HTTP request verb is only for retrieving data (GET, HEAD, OPTIONS)"""
-
     def has_object_permission(self, request, view, obj):
         return request.method in permissions.SAFE_METHODS

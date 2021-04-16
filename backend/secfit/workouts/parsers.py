@@ -7,8 +7,7 @@ from rest_framework import parsers
 
 
 class MultipartJsonParser(parsers.MultiPartParser):
-    """Parser for serializing multipart data containing both files and JSON.
-
+    """
     This is currently unused.
     """
 
@@ -41,8 +40,7 @@ class MultipartJsonParser(parsers.MultiPartParser):
 
 
 class MultipartJsonParserWorkout(parsers.MultiPartParser):
-    """Parser for serializing multipart data containing both files and JSON.
-
+    """
     This is currently unused.
     """
 

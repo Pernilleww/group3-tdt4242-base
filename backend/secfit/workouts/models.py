@@ -1,7 +1,3 @@
-"""Contains the models for the workouts Django application. Users
-log workouts (Workout), which contain instances (ExerciseInstance) of various
-type of exercises (Exercise). The user can also upload files (WorkoutFile) .
-"""
 import os
 from django.db import models
 from django.core.files.storage import FileSystemStorage
@@ -11,17 +7,9 @@ from suggested_workouts.models import SuggestedWorkout
 
 
 class OverwriteStorage(FileSystemStorage):
-    """Filesystem storage for overwriting files. Currently unused."""
+    """Currently unused."""
 
     def get_available_name(self, name, max_length=None):
-        """https://djangosnippets.org/snippets/976/
-        Returns a filename that's free on the target storage system, and
-        available for new content to be written to.
-
-        Args:
-            name (str): Name of the file
-            max_length (int, optional): Maximum length of a file name. Defaults to None.
-        """
         if self.exists(name):
             os.remove(os.path.join(settings.MEDIA_ROOT, name))
 
@@ -78,15 +66,6 @@ class ExerciseInstance(models.Model):
 
 
 def workout_directory_path(instance, filename):
-    """Return path for which workout files should be uploaded on the web server
-
-    Args:
-        instance (WorkoutFile): WorkoutFile instance
-        filename (str): Name of the file
-
-    Returns:
-        str: Path where workout file is stored
-    """
     if instance.workout != None:
         return f"workouts/{instance.workout.id}/{filename}"
     elif instance.suggested_workout != None:

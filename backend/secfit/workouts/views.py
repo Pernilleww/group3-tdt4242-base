@@ -57,7 +57,6 @@ def api_root(request, format=None):
     )
 
 
-# Allow users to save a persistent session in their browser
 class RememberMe(
     mixins.ListModelMixin,
     mixins.CreateModelMixin,
@@ -107,12 +106,7 @@ class RememberMe(
 class WorkoutList(
     mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericAPIView
 ):
-    """Class defining the web response for the creation of a Workout, or displaying a list
-    of Workouts
-
-    HTTP methods: GET, POST
-    """
-
+    
     serializer_class = WorkoutSerializer
     permission_classes = [
         permissions.IsAuthenticated
@@ -166,10 +160,6 @@ class WorkoutDetail(
     mixins.DestroyModelMixin,
     generics.GenericAPIView,
 ):
-    """Class defining the web response for the details of an individual Workout.
-
-    HTTP methods: GET, PUT, DELETE
-    """
     queryset = Workout.objects.all()
     serializer_class = WorkoutSerializer
     permission_classes = [
@@ -191,11 +181,6 @@ class WorkoutDetail(
 class ExerciseList(
     mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericAPIView
 ):
-    """Class defining the web response for the creation of an Exercise, or
-    a list of Exercises.
-
-    HTTP methods: GET, POST
-    """
 
     queryset = Exercise.objects.all()
     serializer_class = ExerciseSerializer
@@ -214,11 +199,6 @@ class ExerciseDetail(
     mixins.DestroyModelMixin,
     generics.GenericAPIView,
 ):
-    """Class defining the web response for the details of an individual Exercise.
-
-    HTTP methods: GET, PUT, PATCH, DELETE
-    """
-
     queryset = Exercise.objects.all()
     serializer_class = ExerciseSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -242,7 +222,6 @@ class ExerciseInstanceList(
     CreateListModelMixin,
     generics.GenericAPIView,
 ):
-    """Class defining the web response for the creation"""
     serializer_class = ExerciseInstanceSerializer
     permission_classes = [permissions.IsAuthenticated & IsOwnerOfWorkout]
 

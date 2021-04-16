@@ -10,9 +10,6 @@ from rest_framework.parsers import (
 )
 from rest_framework.decorators import parser_classes
 from django.shortcuts import get_object_or_404
-"""
-Handling post request of a new suggested workout instance. Handling update, delete and list exercises as well.
-"""
 
 
 @api_view(['POST'])
@@ -34,7 +31,6 @@ def createSuggestedWorkouts(request):
 
 @api_view(['GET'])
 def listAthleteSuggestedWorkouts(request):
-    # Henter ut riktige workouts gitt brukeren som sender requesten
     suggested_workouts = SuggestedWorkout.objects.filter(athlete=request.user)
     if not request.user:
         return Response({"message": "You have to log in to see this information."}, status=status.HTTP_401_UNAUTHORIZED)
@@ -45,7 +41,6 @@ def listAthleteSuggestedWorkouts(request):
 
 @api_view(['GET'])
 def listCoachSuggestedWorkouts(request):
-    # Gjør spørring på workouts der request.user er coach
     if not request.user:
         return Response({"message": "You have to log in to see this information."}, status=status.HTTP_401_UNAUTHORIZED)
     suggested_workouts = SuggestedWorkout.objects.filter(coach=request.user)
@@ -56,18 +51,12 @@ def listCoachSuggestedWorkouts(request):
 
 @api_view(['GET'])
 def listAllSuggestedWorkouts(request):
-    # Lister alle workouts som er foreslått
     suggested_workouts = SuggestedWorkout.objects.all()
     serializer = SuggestedWorkoutSerializer(
         suggested_workouts, many=True, context={'request': request})
     if not request.user.id:
         return Response({"message": "You have to log in to see this information."}, status=status.HTTP_401_UNAUTHORIZED)
     return Response(data=serializer.data, status=status.HTTP_200_OK)
-
-
-"""
-View for both deleting,updating and retrieving a single workout.
-"""
 
 
 @api_view(['GET', 'DELETE', 'PUT'])
