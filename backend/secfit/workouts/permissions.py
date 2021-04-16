@@ -26,15 +26,12 @@ class IsOwnerOfWorkout(permissions.BasePermission):
 
 
 class IsCoachAndVisibleToCoach(permissions.BasePermission):
-    # Fixed bug where the function did not check for the visibility level
-
     def has_object_permission(self, request, view, obj):
         return obj.owner.coach == request.user and (obj.visibility == 'PU' or obj.visibility == 'CO')
 
 
 class IsCoachOfWorkoutAndVisibleToCoach(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
-        # Fixed bug where the function did not check for the visibility level
         return obj.workout.owner.coach == request.user and (
             obj.workout.visibility == "PU" or obj.workout.visibility == "CO"
         )
