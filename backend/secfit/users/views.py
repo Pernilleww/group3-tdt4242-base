@@ -23,10 +23,9 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from users.permissions import IsCurrentUser, IsAthlete, IsCoach
 from workouts.permissions import IsOwner, IsReadOnly
 
+
 class UserList(mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericAPIView):
     serializer_class = UserSerializer
-    users = []
-    admins = []
 
     def get(self, request, *args, **kwargs):
         self.serializer_class = UserGetSerializer
@@ -42,7 +41,6 @@ class UserList(mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericA
             status = self.request.query_params.get("user", None)
             if status and status == "current":
                 qs = get_user_model().objects.filter(pk=self.request.user.pk)
-
         return qs
 
 
@@ -175,13 +173,9 @@ class AthleteFileList(
         serializer.save(owner=self.request.user)
 
     def get_queryset(self):
-        qs = AthleteFile.objects.none()
-
-        if self.request.user:
-            qs = AthleteFile.objects.filter(
-                Q(athlete=self.request.user) | Q(owner=self.request.user)
-            ).distinct()
-
+        qs = AthleteFile.objects.filter(
+            Q(athlete=self.request.user) | Q(owner=self.request.user)
+        ).distinct()
         return qs
 
 

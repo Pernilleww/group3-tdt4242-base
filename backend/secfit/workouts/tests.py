@@ -2,8 +2,8 @@ from django.contrib.auth import get_user_model
 from django.test import RequestFactory, TestCase
 from workouts.permissions import IsOwner, IsOwnerOfWorkout, IsCoachAndVisibleToCoach, IsCoachOfWorkoutAndVisibleToCoach, IsPublic, IsWorkoutPublic, IsReadOnly
 from django.utils import timezone
-from workouts.models import Workout, ExerciseInstance, Exercise
-from workouts.serializers import WorkoutSerializer
+from workouts.models import Workout, ExerciseInstance, Exercise, WorkoutFile
+from workouts.serializers import WorkoutSerializer, WorkoutFileSerializer, ExerciseInstanceSerializer
 from rest_framework.test import APIRequestFactory, APITestCase, APIClient
 from rest_framework import status
 from unittest import skip
@@ -13,7 +13,9 @@ from django.urls import reverse
 from datetime import datetime, timedelta
 import pytz
 from rest_framework.request import Request
-
+import unittest.mock
+from django.core.files import File
+from django.db.models import Q
 '''
     Test permmisions.py
 '''
@@ -793,3 +795,132 @@ class IntegrationTestPlannedWorkout(APITestCase):
             data=json.dumps(invalid_payload),
             content_type='application/json')
         self.assertEquals(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class WorkoutFileTestCase(APITestCase):
+    def setUp(self):
+        self.file_mock = unittest.mock.MagicMock(spec=File, name='FileMock')
+        self.file_mock.name = 'test1.jpg'
+        self.owner = get_user_model()(id=1, username='user', email='email@fake.com', phone_number='92134654',
+                                      country='Norway', city='Hmm', street_address='Hemmelig'
+                                      )
+        self.owner.save()
+        self.file_mock2 = unittest.mock.MagicMock(spec=File, name='FileMock')
+        self.file_mock2.name = 'test2.pdf'
+        self.workout_file = WorkoutFile.objects.create(
+            id=1, workout=None, suggested_workout=None, owner=self.owner, file=self.file_mock2)
+        self.workout_file.save()
+        self.data = {'id': 2, 'owner': self.owner, 'file': self.file_mock}
+
+        self.factory = APIRequestFactory()
+        self.client = APIClient()
+
+    def test_create_workout_file(self):
+        workout = WorkoutFileSerializer.create(
+            WorkoutFileSerializer(self.data), validated_data=self.data)
+        workout_retrieved_from_database = WorkoutFile.objects.get(id=2)
+        self.assertEquals(workout_retrieved_from_database, workout)
+
+    def test_queryset(self):
+        self.client.force_authenticate(self.owner)
+        response = self.client.get(
+            reverse('workout-file-list'))
+        request = self.factory.get(
+            reverse('workout-file-list'))
+
+        filtered_workout_file = WorkoutFile.objects.filter(
+            Q(owner=self.owner)
+            | Q(workout__owner=self.owner)
+            | (
+                Q(workout__visibility="CO")
+                & Q(workout__owner__coach=self.owner)
+            )
+        ).distinct()
+
+        workout_file_serializer = WorkoutFileSerializer(
+            filtered_workout_file, many=True, context={'request': request})
+        self.assertEquals(response.data['results'],
+                          workout_file_serializer.data)
+
+
+class ExerciseInstanceTestCase(APITestCase):
+    def setUp(self):
+        self.factory = APIRequestFactory()
+        self.client = APIClient()
+        self.user = get_user_model()(id=1, username='user', email='email@fake.com', phone_number='92134654',
+                                     country='Norway', city='Hmm', street_address='Hemmelig'
+                                     )
+        self.user.save()
+        self.exercise = Exercise.objects.create(
+            id=1, name='Push up', description='', unit='reps')
+        self.exercise.save()
+        self.exercise_instance = ExerciseInstance.objects.create(
+            id=1, exercise=self.exercise, sets=10, number=3, workout=None, suggested_workout=None)
+        self.exercise_instance.save()
+
+    def test_queryset(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.get(
+            reverse('exercise-instance-list'))
+        request = self.factory.get(
+            reverse('exercise-instance-list'))
+
+        exercise_instance_queryset = ExerciseInstance.objects.filter(
+            Q(workout__owner=self.user)
+            | (
+                (Q(workout__visibility="CO") | Q(workout__visibility="PU"))
+                & Q(workout__owner__coach=self.user)
+            ) | (Q(suggested_workout__coach=self.user) | Q(suggested_workout__athlete=self.user))
+        ).distinct()
+
+        exercise_instance_serializer = ExerciseInstanceSerializer(
+            exercise_instance_queryset, many=True, context={'request': request})
+        self.assertEquals(response.data['results'],
+                          exercise_instance_serializer.data)
+
+
+class WorkoutListTestCase(APITestCase):
+    def setUp(self):
+        self.factory = APIRequestFactory()
+        self.client = APIClient()
+        self.user = get_user_model()(id=1, username='user', email='email@fake.com', phone_number='92134654',
+                                     country='Norway', city='Hmm', street_address='Hemmelig'
+                                     )
+        self.user.save()
+        self.workout1 = Workout.objects.create(id=1, name='workout', date=timezone.now(), notes='Some notes',
+                                               owner=self.user, visibility='PU'
+                                               )
+        self.workout1.save()
+        self.workout2 = Workout.objects.create(id=2, name='workout', date=timezone.now(), notes='Some notes',
+                                               owner=self.user, visibility='PR'
+                                               )
+        self.workout2.save()
+
+        self.workout3 = Workout.objects.create(id=3, name='workout', date=timezone.now(), notes='Some notes',
+                                               owner=self.user, visibility='CO'
+                                               )
+        self.workout3.save()
+
+        self.visitor = get_user_model()(id=2, username='lurker', email='email@fake.com', phone_number='92134654',
+                                        country='Norway', city='Hmm', street_address='Hemmelig'
+                                        )
+        self.visitor.save()
+
+    def test_queryset(self):
+        self.client.force_authenticate(self.visitor)
+        response = self.client.get(
+            reverse('workout-list'))
+        request = self.factory.get(
+            reverse('workout-list'))
+
+        qs = Workout.objects.filter(
+            Q(visibility="PU")
+            | Q(owner=self.visitor)
+            | (Q(visibility="CO") & Q(owner__coach=self.visitor))
+            | (Q(visibility="PR") & Q(owner=self.visitor))
+        ).distinct()
+
+        workout_serializer = WorkoutSerializer(
+            qs, many=True, context={'request': request})
+        self.assertEquals(response.data['results'],
+                          workout_serializer.data)

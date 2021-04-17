@@ -50,7 +50,6 @@ def api_root(request, format=None):
                 "workout-file-list", request=request, format=format
             ),
             "comments": reverse("comment-list", request=request, format=format),
-            "likes": reverse("like-list", request=request, format=format),
         }
     )
 
@@ -65,6 +64,7 @@ class RememberMe(
     serializer_class = RememberMeSerializer
 
     def get(self, request):
+        # TODO: Burde erstattes med permission class. Hører under divergent change
         if request.user.is_authenticated == False:
             raise PermissionDenied
         else:
@@ -103,15 +103,15 @@ class RememberMe(
 class WorkoutList(
     mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericAPIView
 ):
-    
+
     serializer_class = WorkoutSerializer
     permission_classes = [
         permissions.IsAuthenticated
-    ] 
+    ]
     parser_classes = [
         MultipartJsonParserWorkout,
         JSONParser,
-    ]  
+    ]
     filter_backends = [filters.OrderingFilter]
     ordering_fields = ["name", "date", "owner__username"]
 
@@ -137,15 +137,14 @@ class WorkoutList(
 
     def get_queryset(self):
         qs = Workout.objects.none()
-        if self.request.user:
-            qs = Workout.objects.filter(
-                Q(visibility="PU")
-                | Q(owner=self.request.user)
-                | (Q(visibility="CO") & Q(owner__coach=self.request.user))
-                | (Q(visibility="PR") & Q(owner=self.request.user))
-            ).distinct()
-            
-            qs = self.handleExpiredPlannedWorkouts(qs)
+        qs = Workout.objects.filter(
+            Q(visibility="PU")
+            | Q(owner=self.request.user)
+            | (Q(visibility="CO") & Q(owner__coach=self.request.user))
+            | (Q(visibility="PR") & Q(owner=self.request.user))
+        ).distinct()
+
+        qs = self.handleExpiredPlannedWorkouts(qs)
         return qs
 
 
@@ -228,14 +227,13 @@ class ExerciseInstanceList(
 
     def get_queryset(self):
         qs = ExerciseInstance.objects.none()
-        if self.request.user:
-            qs = ExerciseInstance.objects.filter(
-                Q(workout__owner=self.request.user)
-                | (
-                    (Q(workout__visibility="CO") | Q(workout__visibility="PU"))
-                    & Q(workout__owner__coach=self.request.user)
-                ) | (Q(suggested_workout__coach=self.request.user) | Q(suggested_workout__athlete=self.request.user))
-            ).distinct()
+        qs = ExerciseInstance.objects.filter(
+            Q(workout__owner=self.request.user)
+            | (
+                (Q(workout__visibility="CO") | Q(workout__visibility="PU"))
+                & Q(workout__owner__coach=self.request.user)
+            ) | (Q(suggested_workout__coach=self.request.user) | Q(suggested_workout__athlete=self.request.user))
+        ).distinct()
 
         return qs
 
@@ -284,17 +282,14 @@ class WorkoutFileList(
         serializer.save(owner=self.request.user)
 
     def get_queryset(self):
-        qs = WorkoutFile.objects.none()
-        if self.request.user:
-            qs = WorkoutFile.objects.filter(
-                Q(owner=self.request.user)
-                | Q(workout__owner=self.request.user)
-                | (
-                    Q(workout__visibility="CO")
-                    & Q(workout__owner__coach=self.request.user)
-                )
-            ).distinct()
-
+        qs = WorkoutFile.objects.filter(
+            Q(owner=self.request.user)
+            | Q(workout__owner=self.request.user)
+            | (
+                Q(workout__visibility="CO")
+                & Q(workout__owner__coach=self.request.user)
+            )
+        ).distinct()
         return qs
 
 
