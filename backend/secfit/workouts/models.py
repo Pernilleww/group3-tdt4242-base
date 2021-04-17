@@ -23,15 +23,14 @@ class Workout(models.Model):
     )
     planned = models.BooleanField(default=False)
 
-    # Visibility levels
-    PUBLIC = "PU"  # Visible to all authenticated users
-    COACH = "CO"  # Visible only to owner and their coach
-    PRIVATE = "PR"  # Visible only to owner
+    PUBLIC = "PU"  
+    COACH = "CO"  
+    PRIVATE = "PR"  
     VISIBILITY_CHOICES = [
         (PUBLIC, "Public"),
         (COACH, "Coach"),
         (PRIVATE, "Private"),
-    ]  # Choices for visibility level
+    ] 
 
     visibility = models.CharField(
         max_length=2, choices=VISIBILITY_CHOICES, default=COACH

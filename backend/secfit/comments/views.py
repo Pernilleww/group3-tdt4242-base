@@ -31,14 +31,7 @@ class CommentList(
 
         if workout_pk:
             qs = Comment.objects.filter(workout=workout_pk)
-        elif self.request.user:
-            """A comment should be visible to the requesting user if any of the following hold:
-            - The comment is on a public visibility workout
-            - The comment was written by the user
-            - The comment is on a coach visibility workout and the user is the workout owner's coach
-            - The comment is on a workout owned by the user
-            """
-            
+        elif self.request.user:            
             qs = Comment.objects.filter(
                 Q(workout__visibility="PU")
                 | Q(owner=self.request.user)
