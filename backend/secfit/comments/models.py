@@ -32,20 +32,3 @@ class Comment(models.Model):
 
     class Meta:
         ordering = ["-timestamp"]
-
-
-class Like(models.Model):
-    """Django model for a reaction to a comment.
-
-
-    Attributes:
-        owner:       Who liked the comment
-        comment:     The comment that was liked
-        timestamp:   When the like occurred.
-    """
-    owner = models.ForeignKey(
-        get_user_model(), on_delete=models.CASCADE, related_name="likes"
-    )
-    comment = models.ForeignKey(
-        Comment, on_delete=models.CASCADE, related_name="likes")
-    timestamp = models.DateTimeField(default=timezone.now)
