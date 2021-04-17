@@ -8,7 +8,6 @@ MAX_CONN_AGE = 600
 
 def settings(config, *, db_colors=False, databases=True, test_runner=False, staticfiles=True, allowed_hosts=True,
              logging=True, secret_key=True):
-    # Database configuration.
     if databases:
         # Integrity check.
         if 'DATABASES' not in config:
@@ -38,11 +37,9 @@ def settings(config, *, db_colors=False, databases=True, test_runner=False, stat
 
 
     if test_runner:
-        # Enable test runner if found in CI environment.
         if 'CI' in os.environ:
             config['TEST_RUNNER'] = 'django_heroku.HerokuDiscoverRunner'
 
-    # Staticfiles configuration.
     if staticfiles:
 
         config['STATIC_ROOT'] = os.path.join(config['BASE_DIR'], 'staticfiles')
@@ -51,7 +48,6 @@ def settings(config, *, db_colors=False, databases=True, test_runner=False, stat
         # Ensure STATIC_ROOT exists.
         os.makedirs(config['STATIC_ROOT'], exist_ok=True)
 
-        # Insert Whitenoise Middleware.
         try:
             config['MIDDLEWARE_CLASSES'] = tuple(
                 ['whitenoise.middleware.WhiteNoiseMiddleware'] + list(config['MIDDLEWARE_CLASSES']))
@@ -59,14 +55,11 @@ def settings(config, *, db_colors=False, databases=True, test_runner=False, stat
             config['MIDDLEWARE'] = tuple(
                 ['whitenoise.middleware.WhiteNoiseMiddleware'] + list(config['MIDDLEWARE']))
 
-        # Enable GZip.
         config['STATICFILES_STORAGE'] = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
     if allowed_hosts:
         config['ALLOWED_HOSTS'] = ['*']
     
-    # SECRET_KEY configuration.
     if secret_key:
         if 'SECRET_KEY' in os.environ:
-            # Set the Django setting from the environment variable.
             config['SECRET_KEY'] = os.environ['SECRET_KEY']

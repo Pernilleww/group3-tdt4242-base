@@ -1,5 +1,3 @@
-"""Contains custom parsers for serializers from the workouts Django app
-"""
 import json
 from rest_framework import parsers
 
@@ -18,8 +16,6 @@ class MultipartJsonParser(parsers.MultiPartParser):
         data = {}
         new_files = {"suggested_workout_files": []}
 
-        # for case1 with nested serializers
-        # parse each field with json
         for key, value in result.data.items():
             if not isinstance(value, str):
                 data[key] = value
@@ -51,8 +47,6 @@ class MultipartJsonParserWorkout(parsers.MultiPartParser):
         data = {}
         new_files = {"files": []}
 
-        # for case1 with nested serializers
-        # parse each field with json
         for key, value in result.data.items():
             if not isinstance(value, str):
                 data[key] = value

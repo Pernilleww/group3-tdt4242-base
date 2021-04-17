@@ -9,14 +9,6 @@ from suggested_workouts.models import SuggestedWorkout
 
 
 class ExerciseInstanceSerializer(serializers.HyperlinkedModelSerializer):
-    """Serializer for an ExerciseInstance. Hyperlinks are used for relationships by default.
-
-    Serialized fields: url, id, exercise, sets, number, workout
-
-    Attributes:
-        workout:    The associated workout for this instance, represented by a hyperlink
-    """
-
     workout = HyperlinkedRelatedField(
         queryset=Workout.objects.all(), view_name="workout-detail", required=False
     )
@@ -30,15 +22,6 @@ class ExerciseInstanceSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class WorkoutFileSerializer(serializers.HyperlinkedModelSerializer):
-    """Serializer for a WorkoutFile. Hyperlinks are used for relationships by default.
-
-    Serialized fields: url, id, owner, file, workout
-
-    Attributes:
-        owner:      The owner (User) of the WorkoutFile, represented by a username. ReadOnly
-        workout:    The associate workout for this WorkoutFile, represented by a hyperlink
-    """
-
     owner = serializers.ReadOnlyField(source="owner.username")
     workout = HyperlinkedRelatedField(
         queryset=Workout.objects.all(), view_name="workout-detail", required=False
@@ -78,7 +61,6 @@ class WorkoutSerializer(serializers.HyperlinkedModelSerializer):
         extra_kwargs = {"owner": {"read_only": True}}
 
     def create(self, validated_data):
-        # Check if date is valid
         timeNow = datetime.now()
         timeNowAdjusted = pytz.utc.localize(timeNow)
 
@@ -110,8 +92,6 @@ class WorkoutSerializer(serializers.HyperlinkedModelSerializer):
         return workout
 
     def update(self, instance, validated_data):
-        # Add date and planned check
-        # Check if date is valid
         timeNow = datetime.now()
         timeNowAdjusted = pytz.utc.localize(timeNow)
 

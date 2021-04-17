@@ -89,7 +89,6 @@ class RememberMe(
         decode = base64.b64decode(cookieObject.remember_me)
         user, sign = pickle.loads(decode)
 
-        # Validate signature
         if sign == self.sign_user(user):
             return user
 
@@ -110,11 +109,11 @@ class WorkoutList(
     serializer_class = WorkoutSerializer
     permission_classes = [
         permissions.IsAuthenticated
-    ]  # User must be authenticated to create/view workouts
+    ] 
     parser_classes = [
         MultipartJsonParserWorkout,
         JSONParser,
-    ]  # For parsing JSON and Multi-part requests
+    ]  
     filter_backends = [filters.OrderingFilter]
     ordering_fields = ["name", "date", "owner__username"]
 
@@ -147,7 +146,6 @@ class WorkoutList(
                 for i in range(0, len(qs)):
                     if qs[i].planned:
                         if timeNowAdjusted > qs[i].date:
-                            # Update: set planned to false
                             qs[i].planned = False
                             qs[i].save()
 
