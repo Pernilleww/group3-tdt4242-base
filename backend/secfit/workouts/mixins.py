@@ -1,8 +1,3 @@
-"""
-Mixins for the workouts application
-"""
-
-
 class CreateListModelMixin(object):
     """Mixin that allows to create multiple objects from lists.
     Taken from https://stackoverflow.com/a/48885641

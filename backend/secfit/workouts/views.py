@@ -1,5 +1,3 @@
-"""Contains views for the workouts application. These are mostly class-based views.
-"""
 from rest_framework import generics, mixins
 from rest_framework import permissions
 
@@ -57,7 +55,6 @@ def api_root(request, format=None):
     )
 
 
-# Allow users to save a persistent session in their browser
 class RememberMe(
     mixins.ListModelMixin,
     mixins.CreateModelMixin,
@@ -90,7 +87,6 @@ class RememberMe(
         decode = base64.b64decode(cookieObject.remember_me)
         user, sign = pickle.loads(decode)
 
-        # Validate signature
         if sign == self.sign_user(user):
             return user
 
@@ -107,20 +103,15 @@ class RememberMe(
 class WorkoutList(
     mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericAPIView
 ):
-    """Class defining the web response for the creation of a Workout, or displaying a list
-    of Workouts
-
-    HTTP methods: GET, POST
-    """
-
+    
     serializer_class = WorkoutSerializer
     permission_classes = [
         permissions.IsAuthenticated
-    ]  # User must be authenticated to create/view workouts
+    ] 
     parser_classes = [
         MultipartJsonParserWorkout,
         JSONParser,
-    ]  # For parsing JSON and Multi-part requests
+    ]  
     filter_backends = [filters.OrderingFilter]
     ordering_fields = ["name", "date", "owner__username"]
 
@@ -147,17 +138,13 @@ class WorkoutList(
     def get_queryset(self):
         qs = Workout.objects.none()
         if self.request.user:
-            # A workout should be visible to the requesting user if any of the following hold:
-            # - The workout has public visibility
-            # - The owner of the workout is the requesting user
-            # - The workout has coach visibility and the requesting user is the owner's coach
             qs = Workout.objects.filter(
                 Q(visibility="PU")
                 | Q(owner=self.request.user)
                 | (Q(visibility="CO") & Q(owner__coach=self.request.user))
                 | (Q(visibility="PR") & Q(owner=self.request.user))
             ).distinct()
-            # Check if the planned workout has happened
+            
             qs = self.handleExpiredPlannedWorkouts(qs)
         return qs
 
@@ -168,10 +155,6 @@ class WorkoutDetail(
     mixins.DestroyModelMixin,
     generics.GenericAPIView,
 ):
-    """Class defining the web response for the details of an individual Workout.
-
-    HTTP methods: GET, PUT, DELETE
-    """
     queryset = Workout.objects.all()
     serializer_class = WorkoutSerializer
     permission_classes = [
@@ -193,11 +176,6 @@ class WorkoutDetail(
 class ExerciseList(
     mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericAPIView
 ):
-    """Class defining the web response for the creation of an Exercise, or
-    a list of Exercises.
-
-    HTTP methods: GET, POST
-    """
 
     queryset = Exercise.objects.all()
     serializer_class = ExerciseSerializer
@@ -216,11 +194,6 @@ class ExerciseDetail(
     mixins.DestroyModelMixin,
     generics.GenericAPIView,
 ):
-    """Class defining the web response for the details of an individual Exercise.
-
-    HTTP methods: GET, PUT, PATCH, DELETE
-    """
-
     queryset = Exercise.objects.all()
     serializer_class = ExerciseSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -244,7 +217,6 @@ class ExerciseInstanceList(
     CreateListModelMixin,
     generics.GenericAPIView,
 ):
-    """Class defining the web response for the creation"""
     serializer_class = ExerciseInstanceSerializer
     permission_classes = [permissions.IsAuthenticated & IsOwnerOfWorkout]
 
@@ -276,13 +248,6 @@ class ExerciseInstanceDetail(
 ):
     queryset = ExerciseInstance.objects.all()
     serializer_class = ExerciseInstanceSerializer
-    # permission_classes = [
-    #    permissions.IsAuthenticated
-    #    & (
-    #       IsOwnerOfWorkout
-    # | (IsReadOnly & (IsCoachOfWorkoutAndVisibleToCoach | IsWorkoutPublic))
-    #    )
-   # ]
 
     def get(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)

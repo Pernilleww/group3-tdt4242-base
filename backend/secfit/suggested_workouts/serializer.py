@@ -18,17 +18,6 @@ class SuggestedWorkoutSerializer(serializers.ModelSerializer):
         extra_kwargs = {"coach": {"read_only": True}}
 
     def create(self, validated_data, coach):
-        """Custom logic for creating ExerciseInstances, WorkoutFiles, and a Workout.
-
-        This is needed to iterate over the files and exercise instances, since this serializer is
-        nested.
-
-        Args:
-            validated_data: Validated files and exercise_instances
-
-        Returns:
-            Workout: A newly created Workout
-        """
         exercise_instances_data = validated_data.pop(
             'suggested_exercise_instances')
         files_data = []
@@ -118,12 +107,4 @@ class SuggestedWorkoutSerializer(serializers.ModelSerializer):
         return instance
 
     def get_coach_username(self, obj):
-        """Returns the owning user's username
-
-        Args:
-            obj (Workout): Current Workout
-
-        Returns:
-            str: Username of owner
-        """
         return obj.coach.username

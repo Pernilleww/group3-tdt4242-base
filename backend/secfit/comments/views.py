@@ -8,11 +8,9 @@ from comments.serializers import CommentSerializer, LikeSerializer
 from django.db.models import Q
 from rest_framework.filters import OrderingFilter
 
-# Create your views here.
 class CommentList(
     mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericAPIView
 ):
-    # queryset = Comment.objects.all()
     serializer_class = CommentSerializer
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = [OrderingFilter]
@@ -33,17 +31,7 @@ class CommentList(
 
         if workout_pk:
             qs = Comment.objects.filter(workout=workout_pk)
-        elif self.request.user:
-            """A comment should be visible to the requesting user if any of the following hold:
-            - The comment is on a public visibility workout
-            - The comment was written by the user
-            - The comment is on a coach visibility workout and the user is the workout owner's coach
-            - The comment is on a workout owned by the user
-            """
-            # The code below is kind of duplicate of the one in ./permissions.py
-            # We should replace it with a better solution.
-            # Or maybe not.
-            
+        elif self.request.user:            
             qs = Comment.objects.filter(
                 Q(workout__visibility="PU")
                 | Q(owner=self.request.user)
@@ -56,7 +44,6 @@ class CommentList(
 
         return qs
 
-# Details of comment
 class CommentDetail(
     mixins.RetrieveModelMixin,
     mixins.UpdateModelMixin,
@@ -79,7 +66,6 @@ class CommentDetail(
         return self.destroy(request, *args, **kwargs)
 
 
-# List of likes
 class LikeList(mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericAPIView):
     serializer_class = LikeSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -97,7 +83,6 @@ class LikeList(mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericA
         return Like.objects.filter(owner=self.request.user)
 
 
-# Details of like
 class LikeDetail(
     mixins.RetrieveModelMixin,
     mixins.UpdateModelMixin,

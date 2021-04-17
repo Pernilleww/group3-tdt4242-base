@@ -19,21 +19,14 @@ from .django_heroku import settings
 
 groupid = os.environ.get("GROUPID", "0")
 
-# Email configuration
 # The host must be running within NTNU's VPN (vpn.ntnu.no) to allow this config
-# Usage: https://docs.djangoproject.com/en/3.1/topics/email/#obtaining-an-instance-of-an-email-backend
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "mx.ntnu.no"
 EMAIL_USE_TLS = False
 EMAIL_PORT = 25
 
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
-
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 SECRET_KEY = "aqw(!p=^c00jlo$24uv46$n%epw@#1nppviqh#p4l9af3&^32f"
 
@@ -48,8 +41,6 @@ ALLOWED_HOSTS = [
     "tdt4242-base.herokuapp.com",
     "tdt4242-base-secfit.herokuapp.com"
 ]
-
-# Application definition
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -97,9 +88,6 @@ TEMPLATES = [
 WSGI_APPLICATION = "secfit.wsgi.application"
 
 
-# Database
-# https://docs.djangoproject.com/en/3.1/ref/settings/#databases
-
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
@@ -107,13 +95,9 @@ DATABASES = {
     }
 }
 
-# CORS Policy
 CORS_ORIGIN_ALLOW_ALL = (
     True
 )
-
-# Internationalization
-# https://docs.djangoproject.com/en/3.1/topics/i18n/
 
 LANGUAGE_CODE = "en-us"
 
@@ -126,14 +110,10 @@ USE_L10N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/3.1/howto/static-files/
-
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
 STATIC_ROOT = os.path.join(BASE_DIR, "secfit", "staticfiles")
 STATIC_URL = "/static/"
 
-# MEDIA FILES
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 MEDIA_URL = "/media/"
 
