@@ -2,7 +2,6 @@ let cancelWorkoutButton;
 let okWorkoutButton;
 
 function generateWorkoutForm() {
-  // TODO: Add check for future date
   var today = new Date().toISOString();
 
   document.querySelector("#inputDateTime").min = today;
@@ -19,7 +18,6 @@ function generateWorkoutForm() {
   submitForm.append("visibility", formData.get("visibility"));
   submitForm.append("planned", true);
 
-  // adding exercise instances
   let exerciseInstances = [];
   let exerciseInstancesTypes = formData.getAll("type");
   let exerciseInstancesSets = formData.getAll("sets");
@@ -33,7 +31,6 @@ function generateWorkoutForm() {
   }
 
   submitForm.append("exercise_instances", JSON.stringify(exerciseInstances));
-  // adding files
   for (let file of formData.getAll("files")) {
     submitForm.append("files", file);
   }
