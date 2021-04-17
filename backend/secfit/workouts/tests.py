@@ -14,10 +14,10 @@ from datetime import datetime, timedelta
 import pytz
 from rest_framework.request import Request
 
-
 '''
     Test permmisions.py
 '''
+
 
 class WorkoutPermissionsTestCases(TestCase):
     def setUp(self):
@@ -271,15 +271,13 @@ class WorkoutPermissionsTestCases(TestCase):
             self, request=self.request, view=None, obj=None))
 
 
-
-
-
 '''
     Boundary value tests
 '''
 defaultDataWorkout = {"name": "workoutname", "date": "2021-01-1T13:29:00.000Z", "notes": "notes",
                       "visibility": "PU", "planned": "false", "exercise_instances": [], "filename": []}
 counter = 0
+
 
 class WorkoutnameBoundaryTestCase(TestCase):
     def setUp(self):
@@ -683,13 +681,10 @@ class Exercise_instancesBoundaryTestCase(TestCase):
         self.assertEqual(response.status_code, 400)
 
 
-
-
-
-
 '''
     Integration test new feature: UC1
 '''
+
 
 class IntegrationTestPlannedWorkout(APITestCase):
     def setUp(self):
