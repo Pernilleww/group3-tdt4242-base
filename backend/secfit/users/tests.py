@@ -406,7 +406,6 @@ class EmailBoundaryTestCase(TestCase):
 
     @ skip("Skip so pipeline will pass")
     def test_symbols(self):
-        # TODO: how to do this?
         illegalCharacters = "!#¤%&/()=?`^*_:;,.-'¨\+@£$€{[]}´~`"
         for x in illegalCharacters:
             defaultDataRegister["email"] = x

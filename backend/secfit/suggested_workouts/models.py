@@ -5,7 +5,6 @@ from django.utils import timezone
 
 
 class SuggestedWorkout(models.Model):
-    # Visibility levels
     ACCEPTED = "a"
     PENDING = "p"
     DECLINED = "d"

@@ -9,18 +9,8 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from workouts.models import Workout
 from django.utils import timezone
-# Create your models here.
-
 
 class Comment(models.Model):
-    """Django model for a comment left on a workout.
-
-    Attributes:
-        owner:       Who posted the comment
-        workout:     The workout this comment was left on.
-        content:     The content of the comment.
-        timestamp:   When the comment was created.
-    """
     owner = models.ForeignKey(
         get_user_model(), on_delete=models.CASCADE, related_name="comments"
     )

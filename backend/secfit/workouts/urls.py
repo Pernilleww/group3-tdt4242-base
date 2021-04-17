@@ -6,7 +6,6 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 
-# This is a bit messy and will need to change
 urlpatterns = format_suffix_patterns(
     [
         path("", views.api_root),

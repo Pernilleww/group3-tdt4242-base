@@ -10,6 +10,7 @@ from workouts.serializers import ExerciseSerializer
 from django.urls import reverse
 from suggested_workouts.views import createSuggestedWorkouts, detailedSuggestedWorkout
 from rest_framework import status
+from suggested_workouts.views import response_messages
 
 
 """
@@ -154,6 +155,8 @@ class SuggestedWorkoutTestCase(APITestCase):
             content_type='application/json'
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(
+            response.data['message'], response_messages["suggested_workout_created"])
 
     """
     Test invalid payload leads to status code 400
@@ -177,6 +180,8 @@ class SuggestedWorkoutTestCase(APITestCase):
             content_type='application/json'
         )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data['message'],
+                         response_messages["something_went_wrong"])
 
     """
     Test unauthenticated user can not create a suggested workout
@@ -205,6 +210,9 @@ class SuggestedWorkoutTestCase(APITestCase):
             content_type='application/json'
         )
         self.assertEquals(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.data['message'],
+                         response_messages["error_not_your_athlete"])
+
     """
     Test that a user who is not a coach of self.athlete can create a suggested workout to the athlete
     """
@@ -232,6 +240,8 @@ class SuggestedWorkoutTestCase(APITestCase):
             content_type='application/json'
         )
         self.assertEquals(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.data['message'],
+                         response_messages["error_not_your_athlete"])
 
     """
     Test that a coach of a suggested workout is able to access the suggested workout
@@ -255,7 +265,7 @@ class SuggestedWorkoutTestCase(APITestCase):
             reverse('suggested-workout-detail', kwargs={'pk': self.suggested_workout.id}))
         serializer = SuggestedWorkoutSerializer(self.suggested_workout)
         self.assertEqual(response.data, serializer.data)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
     """
     Test that unauthenticated user can not access a suggested workout
     """
@@ -266,6 +276,8 @@ class SuggestedWorkoutTestCase(APITestCase):
             reverse('suggested-workout-detail', kwargs={'pk': self.suggested_workout.id}))
         serializer = SuggestedWorkoutSerializer(self.suggested_workout)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.data['message'],
+                         response_messages["access_denied"])
     """
     Test that a user who is neither a coach nor an athlete of the suggested workout can access the suggested workout
     """
@@ -310,6 +322,8 @@ class SuggestedWorkoutTestCase(APITestCase):
             content_type='application/json'
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['message'],
+                         response_messages["suggested_workout_updated"])
 
     """
     Test that athlete of suggested workout can update it
@@ -343,6 +357,9 @@ class SuggestedWorkoutTestCase(APITestCase):
             content_type='application/json'
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['message'],
+                         response_messages["suggested_workout_updated"])
+
     """
     Testing invalid payloads leads to status code 400
     """
@@ -375,6 +392,8 @@ class SuggestedWorkoutTestCase(APITestCase):
             content_type='application/json'
         )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data['message'],
+                         response_messages["something_went_wrong"])
 
     """
     Test unauthenticated user can not perform an update of a suggested workout
@@ -404,6 +423,8 @@ class SuggestedWorkoutTestCase(APITestCase):
             content_type='application/json'
         )
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.data['message'],
+                         response_messages["access_denied"])
     """
     Test that a user who is neither a coach or an athlete of the suggested workut can perform an update of the suggested workout
     """
@@ -451,6 +472,8 @@ class SuggestedWorkoutTestCase(APITestCase):
         response = self.client.delete(
             reverse('suggested-workout-detail', kwargs={'pk': self.suggested_workout.id}))
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(response.data['message'],
+                         response_messages["suggested_workout_deleted"])
 
     """
     Test that an athlete of the suggested workout can delete it
@@ -461,6 +484,8 @@ class SuggestedWorkoutTestCase(APITestCase):
         response = self.client.delete(
             reverse('suggested-workout-detail', kwargs={'pk': self.suggested_workout.id}))
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(response.data['message'],
+                         response_messages["suggested_workout_deleted"])
 
     """
     Test that an unauthenticated user can not delete a suggested workout
@@ -471,6 +496,8 @@ class SuggestedWorkoutTestCase(APITestCase):
         response = self.client.delete(
             reverse('suggested-workout-detail', kwargs={'pk': self.suggested_workout.id}))
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.data['message'],
+                         response_messages["access_denied"])
 
     """
     Test that a user who is neither a coach or an athlete of the suggested workout can delete it
