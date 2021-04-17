@@ -9,10 +9,12 @@ from django.db.models import Q
 from rest_framework.filters import OrderingFilter
 
 # Create your views here.
+
+
 class CommentList(
     mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericAPIView
 ):
-    # queryset = Comment.objects.all()
+    queryset = Comment.objects.all()
     serializer_class = CommentSerializer
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = [OrderingFilter]
@@ -28,12 +30,7 @@ class CommentList(
         serializer.save(owner=self.request.user)
 
     def get_queryset(self):
-        workout_pk = self.kwargs.get("pk")
-        qs = Comment.objects.none()
-
-        if workout_pk:
-            qs = Comment.objects.filter(workout=workout_pk)
-        elif self.request.user:
+        if self.request.user:
             """A comment should be visible to the requesting user if any of the following hold:
             - The comment is on a public visibility workout
             - The comment was written by the user
@@ -43,7 +40,7 @@ class CommentList(
             # The code below is kind of duplicate of the one in ./permissions.py
             # We should replace it with a better solution.
             # Or maybe not.
-            
+
             qs = Comment.objects.filter(
                 Q(workout__visibility="PU")
                 | Q(owner=self.request.user)
@@ -57,6 +54,8 @@ class CommentList(
         return qs
 
 # Details of comment
+
+
 class CommentDetail(
     mixins.RetrieveModelMixin,
     mixins.UpdateModelMixin,
@@ -66,7 +65,8 @@ class CommentDetail(
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
     permission_classes = [
-        permissions.IsAuthenticated & IsCommentVisibleToUser & (IsOwner | IsReadOnly)
+        permissions.IsAuthenticated & IsCommentVisibleToUser & (
+            IsOwner | IsReadOnly)
     ]
 
     def get(self, request, *args, **kwargs):
