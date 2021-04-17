@@ -5,15 +5,17 @@ from rest_framework.test import APIRequestFactory, APITestCase, APIClient
 from rest_framework.request import Request
 from random import choice
 from string import ascii_uppercase
-from users.models import User
+from users.models import User, Offer
 from django import forms
 from rest_framework import serializers, status
 from rest_framework.exceptions import ValidationError
 import json
 from unittest import skip
 import random
-
-
+from users.views import OfferList
+from django.urls import reverse
+from django.db.models import Q
+from users.serializers import OfferSerializer
 '''
     Serializer tests
 '''
@@ -169,6 +171,104 @@ class UserSerializerTestCase(APITestCase):
             '12345678910'), self.data['password'])
 
 
+"""
+Test case for OfferList
+"""
+
+
+class OfferListTestCase(APITestCase):
+    def setUp(self):
+        self.factory = APIRequestFactory()
+        self.client = APIClient()
+        self.owner = get_user_model()(id=1, username='owner', email='owner@email.com', phone_number='92134654',
+                                      country='Norway', city='Trondheim', street_address='Moholt studentby'
+                                      )
+        self.owner.save()
+        self.recipient = get_user_model()(id=2, username='recipient', email='recipient@email.com', phone_number='92134654',
+                                          country='Norway', city='Oslo', street_address='Grünerløkka'
+                                          )
+        self.recipient.save()
+        self.not_owner_nor_recipient = get_user_model()(id=3, username='not_owner_nor_recipient', email='', phone_number='92134654',
+                                                        country='Norway', city='Trondheim', street_address='Baker street'
+                                                        )
+        self.not_owner_nor_recipient.save()
+
+        self.pending_offer = Offer.objects.create(id=1,
+                                                  owner=self.owner, recipient=self.recipient, status="p")
+        self.pending_offer.save()
+
+        self.accepted_offer = Offer.objects.create(id=2,
+                                                   owner=self.owner, recipient=self.recipient, status="a")
+        self.accepted_offer.save()
+
+        self.deleted_offer = Offer.objects.create(id=3,
+                                                  owner=self.owner, recipient=self.recipient, status="d")
+        self.deleted_offer.save()
+
+    def test_query_by_status_accepted(self):
+        self.client.force_authenticate(user=self.owner)
+        # Accepted
+        response = self.client.get(
+            reverse('offer-list'), {'status': 'a'})
+        request = self.factory.get(reverse('offer-list'), {'status': 'a'})
+        request.user = self.owner
+        expected_offers = Offer.objects.filter(status='a')
+        serialized_offers = OfferSerializer(
+            expected_offers, many=True, context={'request': request})
+
+        self.assertEquals(response.data['results'], serialized_offers.data)
+
+    def test_query_by_status_pending(self):
+        self.client.force_authenticate(user=self.owner)
+        response = self.client.get(
+            reverse('offer-list'), {'status': 'p'})
+        request = self.factory.get(reverse('offer-list'), {'status': 'p'})
+        request.user = self.owner
+        expected_offers = Offer.objects.filter(status='p')
+        serialized_offers = OfferSerializer(
+            expected_offers, many=True, context={'request': request})
+
+        self.assertEquals(response.data['results'], serialized_offers.data)
+
+    def test_query_by_status_deleted(self):
+        self.client.force_authenticate(user=self.owner)
+        response = self.client.get(
+            reverse('offer-list'), {'status': 'd'})
+        request = self.factory.get(reverse('offer-list'), {'status': 'd'})
+        request.user = self.owner
+        expected_offers = Offer.objects.filter(status='d')
+        serialized_offers = OfferSerializer(
+            expected_offers, many=True, context={'request': request})
+
+        self.assertEquals(response.data['results'], serialized_offers.data)
+
+    def test_query_by_category_sent(self):
+        self.client.force_authenticate(user=self.owner)
+        request = self.factory.get(
+            reverse('offer-list'), {'category': 'sent'})
+        request.user = self.owner
+        response = self.client.get(
+            reverse('offer-list'), {'category': 'sent'})
+        expected_offers = Offer.objects.filter(owner=self.owner)
+        serialized_offers = OfferSerializer(
+            expected_offers, many=True, context={'request': request})
+        response_data = response.data
+        self.assertEquals(response_data['results'], serialized_offers.data)
+
+    def test_query_by_category_recieved(self):
+        self.client.force_authenticate(user=self.recipient)
+        request = self.factory.get('api/offers/?category=received')
+        request.user = self.recipient
+        response = self.client.get(
+            reverse('offer-list'), {'category': 'received'})
+        expected_offers = Offer.objects.filter(
+            recipient=self.recipient)
+        serialized_offers = OfferSerializer(
+            expected_offers, many=True, context={'request': request})
+        response_data = response.data
+        self.assertEquals(response_data['results'], serialized_offers.data)
+
+
 '''
     Boundary value tests
 '''
@@ -180,61 +280,61 @@ counter = 0
 
 
 class UsernameBoundaryTestCase(TestCase):
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_empty_username(self):
         defaultDataRegister["username"] = ""
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_1_boundary(self):
         defaultDataRegister["username"] = "k"
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_2_boundary(self):
         defaultDataRegister["username"] = "kk"
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_49_boundary(self):
         defaultDataRegister["username"] = "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_50_boundary(self):
         defaultDataRegister["username"] = "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_51_boundary(self):
         defaultDataRegister["username"] = "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_letters_username(self):
         defaultDataRegister["username"] = "johnDoe"
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_num_username(self):
         defaultDataRegister["username"] = "23165484"
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_character_and_num_username(self):
         defaultDataRegister["username"] = "johnDoe7653"
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_symbols(self):
         illegalCharacters = "!#¤%&/<>|§()=?`^*_:;,.-'¨\+@£$€{[]}´~` "
         for x in illegalCharacters:
@@ -250,61 +350,61 @@ class EmailBoundaryTestCase(TestCase):
         defaultDataRegister["username"] = "johnDoe" + str(counter)
         counter += 1
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_empty_email(self):
         defaultDataRegister["email"] = ""
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_4_boundary(self):
         defaultDataRegister["email"] = "kkkk"
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_5_boundary(self):
         defaultDataRegister["email"] = "kkkkk"
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_6_boundary(self):
         defaultDataRegister["email"] = "kkkkkk"
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_49_boundary(self):
         defaultDataRegister["email"] = "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_50_boundary(self):
         defaultDataRegister["email"] = "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_51_boundary(self):
         defaultDataRegister["email"] = "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_email(self):
         defaultDataRegister["email"] = "johnDoe@website.com"
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_invalid_email(self):
         defaultDataRegister["email"] = "johnDoe"
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_symbols(self):
         illegalCharacters = "!#¤%&/()=?`^*_:;,.-'¨\+@£$€{[]}´~`"
         for x in illegalCharacters:
@@ -320,61 +420,61 @@ class PasswordBoundaryTestCase(TestCase):
         defaultDataRegister["username"] = "johnDoe" + str(counter)
         counter += 1
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_empty_password(self):
         defaultDataRegister["password"] = ""
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_7_boundary(self):
         defaultDataRegister["password"] = "kkkkkkk"
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_8_boundary(self):
         defaultDataRegister["password"] = "kkkkkkkk"
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_9_boundary(self):
         defaultDataRegister["password"] = "kkkkkkkkk"
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_49_boundary(self):
         defaultDataRegister["password"] = "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_50_boundary(self):
         defaultDataRegister["password"] = "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_51_boundary(self):
         defaultDataRegister["password"] = "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_letters(self):
         defaultDataRegister["password"] = "passwordpassword"
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_numbers(self):
         defaultDataRegister["password"] = "12315489798451216475"
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_symbols(self):
         defaultDataRegister["password"] = "!#¤%&/<>|§()=?`^*_:;,.-'¨\+@£$€{[]}´~` "
         response = self.client.post("/api/users/", defaultDataRegister)
@@ -388,61 +488,61 @@ class PhoneBoundaryTestCase(TestCase):
         defaultDataRegister["username"] = "johnDoe" + str(counter)
         counter += 1
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_empty_phone(self):
         defaultDataRegister["phone_number"] = ""
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_7_boundary(self):
         defaultDataRegister["phone_number"] = "1122334"
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_8_boundary(self):
         defaultDataRegister["phone_number"] = "11223344"
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_9_boundary(self):
         defaultDataRegister["phone_number"] = "112233445"
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_19_boundary(self):
         defaultDataRegister["phone_number"] = "1122334455667788991"
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_20_boundary(self):
         defaultDataRegister["phone_number"] = "11223344556677889911"
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_11_boundary(self):
         defaultDataRegister["phone_number"] = "112233445566778899112"
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_letters(self):
         defaultDataRegister["phone_number"] = "phoneNumber"
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_numbers(self):
         defaultDataRegister["phone_number"] = "004711223344"
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_symbols(self):
         symbols = "!#¤%&/<>|§()=?`^*_:;,.-'¨\+@£$€{[]}´~` "
         for x in symbols:
@@ -458,61 +558,61 @@ class CountryBoundaryTestCase(TestCase):
         defaultDataRegister["username"] = "johnDoe" + str(counter)
         counter += 1
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_empty_country(self):
         defaultDataRegister["country"] = ""
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_3_boundary(self):
         defaultDataRegister["country"] = "chi"
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_4_boundary(self):
         defaultDataRegister["country"] = "Chad"
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_5_boundary(self):
         defaultDataRegister["country"] = "Italy"
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_49_boundary(self):
         defaultDataRegister["country"] = "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_50_boundary(self):
         defaultDataRegister["country"] = "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_51_boundary(self):
         defaultDataRegister["country"] = "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_letters(self):
         defaultDataRegister["country"] = "Norway"
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_numbers(self):
         defaultDataRegister["country"] = "Norway1"
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_symbols(self):
         symbols = "!#¤%&/<>|§()=?`^*_:;,.-'¨\+@£$€{[]}´~` "
         for x in symbols:
@@ -528,55 +628,55 @@ class CityBoundaryTestCase(TestCase):
         defaultDataRegister["username"] = "johnDoe" + str(counter)
         counter += 1
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_empty_city(self):
         defaultDataRegister["city"] = ""
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_1_boundary(self):
         defaultDataRegister["city"] = "A"
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_2_boundary(self):
         defaultDataRegister["city"] = "Li"
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_49_boundary(self):
         defaultDataRegister["city"] = "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_50_boundary(self):
         defaultDataRegister["city"] = "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_51_boundary(self):
         defaultDataRegister["city"] = "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_letters(self):
         defaultDataRegister["city"] = "Oslo"
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_numbers(self):
         defaultDataRegister["city"] = "Oslo1"
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_symbols(self):
         symbols = "!#¤%&/<>|§()=?`^*_:;,.-'¨\+@£$€{[]}´~` "
         for x in symbols:
@@ -592,61 +692,61 @@ class Street_AdressBoundaryTestCase(TestCase):
         defaultDataRegister["username"] = "johnDoe" + str(counter)
         counter += 1
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_empty_street_adress(self):
         defaultDataRegister["street_adress"] = ""
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_1_boundary(self):
         defaultDataRegister["street_adress"] = "A"
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_2_boundary(self):
         defaultDataRegister["street_adress"] = "Ta"
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_49_boundary(self):
         defaultDataRegister["street_adress"] = "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_50_boundary(self):
         defaultDataRegister["street_adress"] = "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_51_boundary(self):
         defaultDataRegister["street_adress"] = "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_letters(self):
         defaultDataRegister["street_adress"] = "Strandveien"
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_numbers(self):
         defaultDataRegister["street_adress"] = "Strandveien1"
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_space(self):
         defaultDataRegister["street_adress"] = "Kongens gate"
         response = self.client.post("/api/users/", defaultDataRegister)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    @skip("Skip so pipeline will pass")
+    @ skip("Skip so pipeline will pass")
     def test_symbols(self):
         symbols = "!#¤%&/<>|§()=?`^*_:;,.-'¨\+@£$€{[]}´~`"
         for x in symbols:

@@ -55,7 +55,8 @@ class UserDetail(
     lookup_field_options = ["pk", "username"]
     serializer_class = UserSerializer
     queryset = get_user_model().objects.all()
-    permission_classes = [permissions.IsAuthenticated & (IsCurrentUser | IsReadOnly)]
+    permission_classes = [permissions.IsAuthenticated &
+                          (IsCurrentUser | IsReadOnly)]
 
     def get_object(self):
         for field in self.lookup_field_options:
@@ -83,7 +84,7 @@ class UserDetail(
 class OfferList(
     mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericAPIView
 ):
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticated]
     serializer_class = OfferSerializer
 
     def get(self, request, *args, **kwargs):
@@ -95,9 +96,24 @@ class OfferList(
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
 
+    def filter_by_status(self, qs, qp, s, u):
+        if s:
+            qs = qs.filter(status=s)
+            if qp.get("status", None) is None:
+                qs = Offer.objects.filter(Q(owner=u)).distinct()
+        return qs
+
+    def filter_by_category(self, qs, u, c, qp):
+        if c and qp:
+            if c == "sent":
+                qs = qs.filter(owner=u)
+            elif c == "received":
+                qs = qs.filter(recipient=u)
+        return qs
+
     def get_queryset(self):
         qs = Offer.objects.none()
-        result = Offer.objects.none()
+
         if self.request.user:
             qs = Offer.objects.filter(
                 Q(owner=self.request.user) | Q(recipient=self.request.user)
@@ -107,21 +123,12 @@ class OfferList(
 
             # filtering by status (if provided)
             s = qp.get("status", None)
-            if s is not None and self.request is not None:
-                qs = qs.filter(status=s)
-                if qp.get("status", None) is None:
-                    qs = Offer.objects.filter(Q(owner=u)).distinct()
+            qs = self.filter_by_status(qs, qp, s, u)
 
-            # filtering by category (sent or received)
+           # filtering by category (sent or received)
             c = qp.get("category", None)
-            if c is not None and qp is not None:
-                if c == "sent":
-                    qs = qs.filter(owner=u)
-                elif c == "received":
-                    qs = qs.filter(recipient=u)
-            return qs
-        else:
-            return result
+            qs = self.filter_by_category(qs, u, c, qp)
+        return qs
 
 
 class OfferDetail(
