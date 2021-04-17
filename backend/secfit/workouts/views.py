@@ -115,16 +115,6 @@ class WorkoutList(
     filter_backends = [filters.OrderingFilter]
     ordering_fields = ["name", "date", "owner__username"]
 
-    def update_happened_planned_workouts(self, qs):
-        if len(qs) > 0:
-                timeNow = datetime.now()
-                timeNowAdjusted = pytz.utc.localize(timeNow)
-                for i in range(0, len(qs)):
-                    if qs[i].planned:
-                        if timeNowAdjusted > qs[i].date:
-                            qs[i].planned = False
-                            qs[i].save()
-
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
 
@@ -143,8 +133,16 @@ class WorkoutList(
                 | (Q(visibility="CO") & Q(owner__coach=self.request.user))
                 | (Q(visibility= "PR") & Q(owner=self.request.user))
             ).distinct()
-        
-        update_happened_planned_workouts(qs)
+            
+            # Check if the planned workout has happened
+            if len(qs) > 0:
+                timeNow = datetime.now()
+                timeNowAdjusted = pytz.utc.localize(timeNow)
+                for i in range(0, len(qs)):
+                    if qs[i].planned:
+                        if timeNowAdjusted > qs[i].date:
+                            qs[i].planned = False
+                            qs[i].save()
 
         return qs
 
