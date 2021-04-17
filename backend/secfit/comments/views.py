@@ -38,9 +38,6 @@ class CommentList(
             - The comment is on a coach visibility workout and the user is the workout owner's coach
             - The comment is on a workout owned by the user
             """
-            # The code below is kind of duplicate of the one in ./permissions.py
-            # We should replace it with a better solution.
-            # Or maybe not.
             
             qs = Comment.objects.filter(
                 Q(workout__visibility="PU")

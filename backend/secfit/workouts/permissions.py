@@ -1,5 +1,3 @@
-"""Contains custom DRF permissions classes for the workouts app
-"""
 from rest_framework import permissions
 from workouts.models import Workout
 

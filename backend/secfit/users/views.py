@@ -39,7 +39,6 @@ class UserList(mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericA
         qs = get_user_model().objects.all()
 
         if self.request.user:
-            # Return the currently logged in user
             status = self.request.query_params.get("user", None)
             if status and status == "current":
                 qs = get_user_model().objects.filter(pk=self.request.user.pk)

@@ -1,5 +1,3 @@
-"""Contains views for the workouts application. These are mostly class-based views.
-"""
 from rest_framework import generics, mixins
 from rest_framework import permissions
 
