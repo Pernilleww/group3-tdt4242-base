@@ -127,10 +127,6 @@ class WorkoutList(
     def get_queryset(self):
         qs = Workout.objects.none()
         if self.request.user:
-            # A workout should be visible to the requesting user if any of the following hold:
-            # - The workout has public visibility
-            # - The owner of the workout is the requesting user
-            # - The workout has coach visibility and the requesting user is the owner's coach
             qs = Workout.objects.filter(
                 Q(visibility="PU")
                 | Q(owner=self.request.user)
