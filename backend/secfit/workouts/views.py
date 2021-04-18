@@ -57,7 +57,6 @@ def api_root(request, format=None):
 class RememberMe(
     mixins.ListModelMixin,
     mixins.CreateModelMixin,
-    mixins.DestroyModelMixin,
     generics.GenericAPIView,
 ):
 
@@ -295,7 +294,6 @@ class WorkoutFileList(
 
 class WorkoutFileDetail(
     mixins.RetrieveModelMixin,
-    mixins.UpdateModelMixin,
     mixins.DestroyModelMixin,
     generics.GenericAPIView,
 ):

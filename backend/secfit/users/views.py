@@ -181,7 +181,6 @@ class AthleteFileList(
 
 class AthleteFileDetail(
     mixins.RetrieveModelMixin,
-    mixins.UpdateModelMixin,
     mixins.DestroyModelMixin,
     generics.GenericAPIView,
 ):
