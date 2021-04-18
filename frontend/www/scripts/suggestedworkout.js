@@ -36,7 +36,6 @@ async function retrieveWorkout(id, currentUser) {
 }
 
 
-
 function showInFormFields(form, formData, workoutData){
     for (let key of formData.keys()) {
         let selector = `input[name="${key}"], textarea[name="${key}"]`;
