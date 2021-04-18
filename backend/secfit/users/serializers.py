@@ -41,6 +41,8 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
         except forms.ValidationError as error:
             raise serializers.ValidationError(error.messages)
 
+        if password != password1:
+            raise serializers.ValidationError("Passwords must match!")
         return value
 
     def create(self, validated_data):
@@ -97,9 +99,6 @@ class AthleteFileSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = AthleteFile
         fields = ["url", "id", "owner", "file", "athlete"]
-
-    def create(self, validated_data):
-        return AthleteFile.objects.create(**validated_data)
 
 
 class OfferSerializer(serializers.HyperlinkedModelSerializer):

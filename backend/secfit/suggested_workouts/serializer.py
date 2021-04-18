@@ -59,9 +59,7 @@ class SuggestedWorkoutSerializer(serializers.ModelSerializer):
         return instance
 
     def handle_exercise_instances(self, exercise_instances, exercise_instances_data, instance):
-        # This updates existing exercise instances without adding or deleting object.
-        # zip() will yield n 2-tuples, where n is
-        # min(len(exercise_instance), len(exercise_instance_data))
+
         for exercise_instance, exercise_instance_data in zip(
                 exercise_instances.all(), exercise_instances_data):
             exercise_instance.exercise = exercise_instance_data.get(
@@ -75,14 +73,14 @@ class SuggestedWorkoutSerializer(serializers.ModelSerializer):
             )
             exercise_instance.save()
 
-        # If new exercise instances have been added to the workout, then create them
+        # Create new exercise instances
         if len(exercise_instances_data) > len(exercise_instances.all()):
             for i in range(len(exercise_instances.all()), len(exercise_instances_data)):
                 exercise_instance_data = exercise_instances_data[i]
                 ExerciseInstance.objects.create(
                     suggested_workout=instance, **exercise_instance_data
                 )
-        # Else if exercise instances have been removed from the workout, then delete them
+        # Delete exercise instances
         elif len(exercise_instances_data) < len(exercise_instances.all()):
             for i in range(len(exercise_instances_data), len(exercise_instances.all())):
                 exercise_instances.all()[i].delete()
@@ -96,7 +94,7 @@ class SuggestedWorkoutSerializer(serializers.ModelSerializer):
                 file.file = file_data.get("file", file.file)
                 file.save()
 
-            # If new files have been added, creating new WorkoutFiles
+            # Create new WorkoutFiles
             if len(files_data) > len(files.all()):
                 for i in range(len(files.all()), len(files_data)):
                     WorkoutFile.objects.create(
@@ -104,7 +102,7 @@ class SuggestedWorkoutSerializer(serializers.ModelSerializer):
                         owner=instance.coach,
                         file=files_data[i].get("file"),
                     )
-            # Else if files have been removed, delete WorkoutFiles
+            # Delete WorkoutFiles
             elif len(files_data) < len(files.all()):
                 for i in range(len(files_data), len(files.all())):
                     files.all()[i].delete()

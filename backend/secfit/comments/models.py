@@ -22,12 +22,3 @@ class Comment(models.Model):
 
     class Meta:
         ordering = ["-timestamp"]
-
-
-class Like(models.Model):
-    owner = models.ForeignKey(
-        get_user_model(), on_delete=models.CASCADE, related_name="likes"
-    )
-    comment = models.ForeignKey(
-        Comment, on_delete=models.CASCADE, related_name="likes")
-    timestamp = models.DateTimeField(default=timezone.now)

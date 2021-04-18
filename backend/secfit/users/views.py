@@ -31,10 +31,9 @@ import pickle
 from django.core.signing import Signer
 
 
+
 class UserList(mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericAPIView):
     serializer_class = UserSerializer
-    users = []
-    admins = []
 
     def get(self, request, *args, **kwargs):
         self.serializer_class = UserGetSerializer
@@ -50,7 +49,6 @@ class UserList(mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericA
             status = self.request.query_params.get("user", None)
             if status and status == "current":
                 qs = get_user_model().objects.filter(pk=self.request.user.pk)
-
         return qs
 
 
@@ -129,11 +127,9 @@ class OfferList(
             qp = self.request.query_params
             u = self.request.user
 
-            # filtering by status (if provided)
             s = qp.get("status", None)
             qs = self.filter_by_status(qs, qp, s, u)
 
-           # filtering by category (sent or received)
             c = qp.get("category", None)
             qs = self.filter_by_category(qs, u, c, qp)
         return qs
@@ -183,19 +179,14 @@ class AthleteFileList(
         serializer.save(owner=self.request.user)
 
     def get_queryset(self):
-        qs = AthleteFile.objects.none()
-
-        if self.request.user:
-            qs = AthleteFile.objects.filter(
-                Q(athlete=self.request.user) | Q(owner=self.request.user)
-            ).distinct()
-
+        qs = AthleteFile.objects.filter(
+            Q(athlete=self.request.user) | Q(owner=self.request.user)
+        ).distinct()
         return qs
 
 
 class AthleteFileDetail(
     mixins.RetrieveModelMixin,
-    mixins.UpdateModelMixin,
     mixins.DestroyModelMixin,
     generics.GenericAPIView,
 ):

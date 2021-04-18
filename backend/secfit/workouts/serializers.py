@@ -34,9 +34,6 @@ class WorkoutFileSerializer(serializers.HyperlinkedModelSerializer):
         model = WorkoutFile
         fields = ["url", "id", "owner", "file", "workout", "suggested_workout"]
 
-    def create(self, validated_data):
-        return WorkoutFile.objects.create(**validated_data)
-
 
 class WorkoutSerializer(serializers.HyperlinkedModelSerializer):
     owner_username = serializers.SerializerMethodField()
@@ -60,7 +57,7 @@ class WorkoutSerializer(serializers.HyperlinkedModelSerializer):
         ]
         extra_kwargs = {"owner": {"read_only": True}}
 
-    def create(self, validated_data):
+    def check_date(self, validated_data):
         time_now = datetime.now()
         time_now_adjusted = pytz.utc.localize(time_now)
 
@@ -72,6 +69,9 @@ class WorkoutSerializer(serializers.HyperlinkedModelSerializer):
             if time_now_adjusted <= validated_data["date"]:
                 raise serializers.ValidationError(
                     {"date": ["Date must be an old date"]})
+
+    def create(self, validated_data):
+        self.check_date(validated_data)
 
         exercise_instances_data = validated_data.pop("exercise_instances")
         files_data = []
@@ -92,17 +92,7 @@ class WorkoutSerializer(serializers.HyperlinkedModelSerializer):
         return workout
 
     def update(self, instance, validated_data):
-        time_now = datetime.now()
-        time_now_adjusted = pytz.utc.localize(time_now)
-
-        if validated_data["planned"]:
-            if time_now_adjusted >= validated_data["date"]:
-                raise serializers.ValidationError(
-                    {"date": ["Date must be a future date"]})
-        else:
-            if time_now_adjusted <= validated_data["date"]:
-                raise serializers.ValidationError(
-                    {"date": ["Date must be an old date"]})
+        self.check_date(validated_data)
 
         exercise_instances_data = validated_data.pop("exercise_instances")
         exercise_instances = instance.exercise_instances
@@ -122,9 +112,6 @@ class WorkoutSerializer(serializers.HyperlinkedModelSerializer):
         return instance
 
     def handle_exercise_instances(self, exercise_instances, exercise_instances_data, instance):
-        # This updates existing exercise instances without adding or deleting object.
-        # zip() will yield n 2-tuples, where n is
-        # min(len(exercise_instance), len(exercise_instance_data))
         for exercise_instance, exercise_instance_data in zip(
             exercise_instances.all(), exercise_instances_data
         ):
@@ -139,14 +126,14 @@ class WorkoutSerializer(serializers.HyperlinkedModelSerializer):
             )
             exercise_instance.save()
 
-        # If new exercise instances have been added to the workout, then create them
+        # Create new exercise instances
         if len(exercise_instances_data) > len(exercise_instances.all()):
             for i in range(len(exercise_instances.all()), len(exercise_instances_data)):
                 exercise_instance_data = exercise_instances_data[i]
                 ExerciseInstance.objects.create(
                     workout=instance, **exercise_instance_data
                 )
-        # Else if exercise instances have been removed from the workout, then delete them
+        # Delete exercise instances
         elif len(exercise_instances_data) < len(exercise_instances.all()):
             for i in range(len(exercise_instances_data), len(exercise_instances.all())):
                 exercise_instances.all()[i].delete()
@@ -160,7 +147,7 @@ class WorkoutSerializer(serializers.HyperlinkedModelSerializer):
                 file.file = file_data.get("file", file.file)
                 file.save()
 
-            # If new files have been added, creating new WorkoutFiles
+            # Create new WorkoutFiles
             if len(files_data) > len(files.all()):
                 for i in range(len(files.all()), len(files_data)):
                     WorkoutFile.objects.create(
@@ -168,7 +155,7 @@ class WorkoutSerializer(serializers.HyperlinkedModelSerializer):
                         owner=instance.owner,
                         file=files_data[i].get("file"),
                     )
-            # Else if files have been removed, delete WorkoutFiles
+            # Delete WorkoutFiles
             elif len(files_data) < len(files.all()):
                 for i in range(len(files_data), len(files.all())):
                     files.all()[i].delete()
