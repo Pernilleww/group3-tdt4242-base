@@ -17,7 +17,8 @@ from workouts.permissions import (
     IsCoachOfWorkoutAndVisibleToCoach,
     IsReadOnly,
     IsPublic,
-    IsWorkoutPublic
+    IsWorkoutPublic,
+    RememberMePermission
 )
 from workouts.mixins import CreateListModelMixin
 from workouts.models import Workout, Exercise, ExerciseInstance, WorkoutFile
@@ -60,9 +61,7 @@ class RememberMe(APIView):
     serializer_class = RememberMeSerializer
 
     def get(self, request):
-        if request.user.is_authenticated == False:
-            raise PermissionDenied
-        else:
+        if RememberMePermission.has_permission(RememberMePermission, request=request):
             return Response({"remember_me": self.rememberme()})
 
     def post(self, request):
