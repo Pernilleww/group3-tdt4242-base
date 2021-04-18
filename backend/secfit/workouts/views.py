@@ -1,6 +1,6 @@
 from rest_framework import generics, mixins
 from rest_framework import permissions
-
+from rest_framework.views import APIView
 from rest_framework.parsers import (
     JSONParser,
 )
@@ -18,6 +18,7 @@ from workouts.permissions import (
     IsReadOnly,
     IsPublic,
     IsWorkoutPublic,
+    RememberMePermission
 )
 from workouts.mixins import CreateListModelMixin
 from workouts.models import Workout, Exercise, ExerciseInstance, WorkoutFile
@@ -54,18 +55,12 @@ def api_root(request, format=None):
     )
 
 
-class RememberMe(
-    mixins.ListModelMixin,
-    mixins.CreateModelMixin,
-    generics.GenericAPIView,
-):
+class RememberMe(APIView):
 
     serializer_class = RememberMeSerializer
 
     def get(self, request):
-        if request.user.is_authenticated == False:
-            raise PermissionDenied
-        else:
+        if RememberMePermission.has_permission(RememberMePermission, request=request):
             return Response({"remember_me": self.rememberme()})
 
     def post(self, request):
