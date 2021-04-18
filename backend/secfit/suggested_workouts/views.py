@@ -27,7 +27,7 @@ response_messages = {
 @api_view(['POST'])
 @parser_classes([MultipartJsonParser,
                  JSONParser])
-def createSuggestedWorkouts(request):
+def create_suggested_workouts(request):
     serializer = SuggestedWorkoutSerializer(data=request.data)
     if serializer.is_valid():
         chosen_athlete_id = request.data['athlete']
@@ -42,7 +42,7 @@ def createSuggestedWorkouts(request):
 
 
 @api_view(['GET'])
-def listAthleteSuggestedWorkouts(request):
+def list_athlete_suggested_workouts(request):
     suggested_workouts = SuggestedWorkout.objects.filter(athlete=request.user)
     if not request.user:
         return Response({"message": response_messages["you_have_to_log_in"]}, status=status.HTTP_401_UNAUTHORIZED)
@@ -52,7 +52,7 @@ def listAthleteSuggestedWorkouts(request):
 
 
 @api_view(['GET'])
-def listCoachSuggestedWorkouts(request):
+def list_coach_suggested_workouts(request):
     if not request.user:
         return Response({"message": response_messages["you_have_to_log_in"]}, status=status.HTTP_401_UNAUTHORIZED)
     suggested_workouts = SuggestedWorkout.objects.filter(coach=request.user)
@@ -62,7 +62,7 @@ def listCoachSuggestedWorkouts(request):
 
 
 @api_view(['GET'])
-def listAllSuggestedWorkouts(request):
+def list_all_suggested_workouts(request):
     suggested_workouts = SuggestedWorkout.objects.all()
     serializer = SuggestedWorkoutSerializer(
         suggested_workouts, many=True, context={'request': request})
@@ -74,7 +74,7 @@ def listAllSuggestedWorkouts(request):
 @api_view(['GET', 'DELETE', 'PUT'])
 @parser_classes([MultipartJsonParser,
                  JSONParser])
-def detailedSuggestedWorkout(request, pk):
+def detailed_suggested_workouts(request, pk):
     detailed_suggested_workout = get_object_or_404(SuggestedWorkout, pk=pk)
     if not request.user.id:
         return Response({"message": response_messages["access_denied"]}, status=status.HTTP_401_UNAUTHORIZED)

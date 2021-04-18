@@ -63,17 +63,16 @@ class RememberMe(
     serializer_class = RememberMeSerializer
 
     def get(self, request):
-        # TODO: Burde erstattes med permission class. Hører under divergent change
         if request.user.is_authenticated == False:
             raise PermissionDenied
         else:
             return Response({"remember_me": self.rememberme()})
 
     def post(self, request):
-        cookieObject = namedtuple("Cookies", request.COOKIES.keys())(
+        cookie_object = namedtuple("Cookies", request.COOKIES.keys())(
             *request.COOKIES.values()
         )
-        user = self.get_user(cookieObject)
+        user = self.get_user(cookie_object)
         refresh = RefreshToken.for_user(user)
         return Response(
             {
@@ -82,8 +81,8 @@ class RememberMe(
             }
         )
 
-    def get_user(self, cookieObject):
-        decode = base64.b64decode(cookieObject.remember_me)
+    def get_user(self, cookie_object):
+        decode = base64.b64decode(cookie_object.remember_me)
         user, sign = pickle.loads(decode)
 
         if sign == self.sign_user(user):
@@ -124,14 +123,12 @@ class WorkoutList(
         serializer.save(owner=self.request.user)
 
     def handleExpiredPlannedWorkouts(self, qs):
-        timeNow = datetime.now()
-        timeNowAdjusted = pytz.utc.localize(timeNow)
+        time_now = datetime.now()
+        time_now_adjusted = pytz.utc.localize(time_now)
         for i in range(0, len(qs)):
-            if qs[i].planned:
-                if timeNowAdjusted > qs[i].date:
-                    # Update: set planned to false
-                    qs[i].planned = False
-                    qs[i].save()
+            if qs[i].planned and time_now_adjusted > qs[i].date:
+                qs[i].planned = False
+                qs[i].save()
         return qs
 
     def get_queryset(self):

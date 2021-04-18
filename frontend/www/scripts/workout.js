@@ -232,7 +232,6 @@ function exportCSVFile(headers, items, fileTitle) {
         items.unshift(headers);
     }
 
-    // Convert Object to JSON
     var jsonObject = JSON.stringify(items);
 
     var csv = this.convertToCSV(jsonObject);
@@ -316,10 +315,9 @@ function generateWorkoutForm() {
             number: exerciseInstancesNumbers[i],
             sets: exerciseInstancesSets[i],
         });
-    };
+    }
 
     submitForm.append("exercise_instances", JSON.stringify(exerciseInstances));
-    // adding files
     for (let file of formData.getAll("files")) {
         submitForm.append("files", file);
     }
@@ -350,7 +348,6 @@ function handleCancelDuringWorkoutCreate() {
 }
 
 async function createBlankExercise() {
-    let form = document.querySelector("#form-workout");
 
     let exerciseTypeResponse = await sendRequest("GET", `${HOST}/api/exercises/`);
     let exerciseTypes = await exerciseTypeResponse.json();
@@ -466,7 +463,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     deleteWorkoutButton = document.querySelector("#btn-delete-workout");
     editWorkoutButton = document.querySelector("#btn-edit-workout");
     exportWorkoutButton = document.querySelector("#btn-export-workout");
-    let postCommentButton = document.querySelector("#post-comment");
+    postCommentButton = document.querySelector("#post-comment");
     let divCommentRow = document.querySelector("#div-comment-row");
     let buttonAddExercise = document.querySelector("#btn-add-exercise");
     let buttonRemoveExercise = document.querySelector("#btn-remove-exercise");
@@ -488,22 +485,22 @@ window.addEventListener("DOMContentLoaded", async () => {
             editWorkoutButton.addEventListener("click", handleEditWorkoutButtonClick);
             exportWorkoutButton.addEventListener(
                 "click",
-                ((workoutData) => handleExportToCalendarClick(workoutData)).bind(
+                (() => handleExportToCalendarClick(workoutData)).bind(
                     undefined,
                     workoutData
                 )
             );
             deleteWorkoutButton.addEventListener(
                 "click",
-                (async (id) => await deleteWorkout(id)).bind(undefined, id)
+                (async () =>  deleteWorkout(id)).bind(undefined, id)
             );
             okWorkoutButton.addEventListener(
                 "click",
-                (async (id) => await updateWorkout(id)).bind(undefined, id)
+                (async () =>  updateWorkout(id)).bind(undefined, id)
             );
             postCommentButton.addEventListener(
                 "click",
-                (async (id) => await createComment(id)).bind(undefined, id)
+                (async () =>  createComment(id)).bind(undefined, id)
             );
             divCommentRow.className = divCommentRow.className.replace(" hide", "");
         }
@@ -536,7 +533,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 
         okWorkoutButton.addEventListener(
             "click",
-            async () => await createWorkout()
+            async () =>  createWorkout()
         );
         cancelWorkoutButton.addEventListener(
             "click",

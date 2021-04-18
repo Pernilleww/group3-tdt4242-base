@@ -58,15 +58,15 @@ class WorkoutSerializer(serializers.HyperlinkedModelSerializer):
         extra_kwargs = {"owner": {"read_only": True}}
 
     def create(self, validated_data):
-        timeNow = datetime.now()
-        timeNowAdjusted = pytz.utc.localize(timeNow)
+        time_now = datetime.now()
+        time_now_adjusted = pytz.utc.localize(time_now)
 
         if validated_data["planned"]:
-            if timeNowAdjusted >= validated_data["date"]:
+            if time_now_adjusted >= validated_data["date"]:
                 raise serializers.ValidationError(
                     {"date": ["Date must be a future date"]})
         else:
-            if timeNowAdjusted <= validated_data["date"]:
+            if time_now_adjusted <= validated_data["date"]:
                 raise serializers.ValidationError(
                     {"date": ["Date must be an old date"]})
 
@@ -89,15 +89,15 @@ class WorkoutSerializer(serializers.HyperlinkedModelSerializer):
         return workout
 
     def update(self, instance, validated_data):
-        timeNow = datetime.now()
-        timeNowAdjusted = pytz.utc.localize(timeNow)
+        time_now = datetime.now()
+        time_now_adjusted = pytz.utc.localize(time_now)
 
         if validated_data["planned"]:
-            if timeNowAdjusted >= validated_data["date"]:
+            if time_now_adjusted >= validated_data["date"]:
                 raise serializers.ValidationError(
                     {"date": ["Date must be a future date"]})
         else:
-            if timeNowAdjusted <= validated_data["date"]:
+            if time_now_adjusted <= validated_data["date"]:
                 raise serializers.ValidationError(
                     {"date": ["Date must be an old date"]})
 
@@ -111,8 +111,14 @@ class WorkoutSerializer(serializers.HyperlinkedModelSerializer):
         instance.date = validated_data.get("date", instance.date)
         instance.save()
 
-        # Handle ExerciseInstances
+        self.handle_exercise_instances(
+            exercise_instances, exercise_instances_data, instance)
 
+        self.handle_workout_files(validated_data, instance)
+
+        return instance
+
+    def handle_exercise_instances(self, exercise_instances, exercise_instances_data, instance):
         # This updates existing exercise instances without adding or deleting object.
         # zip() will yield n 2-tuples, where n is
         # min(len(exercise_instance), len(exercise_instance_data))
@@ -142,8 +148,7 @@ class WorkoutSerializer(serializers.HyperlinkedModelSerializer):
             for i in range(len(exercise_instances_data), len(exercise_instances.all())):
                 exercise_instances.all()[i].delete()
 
-        # Handle WorkoutFiles
-
+    def handle_workout_files(self, validated_data, instance):
         if "files" in validated_data:
             files_data = validated_data.pop("files")
             files = instance.files
@@ -164,8 +169,6 @@ class WorkoutSerializer(serializers.HyperlinkedModelSerializer):
             elif len(files_data) < len(files.all()):
                 for i in range(len(files_data), len(files.all())):
                     files.all()[i].delete()
-
-        return instance
 
     def get_owner_username(self, obj):
         return obj.owner.username
