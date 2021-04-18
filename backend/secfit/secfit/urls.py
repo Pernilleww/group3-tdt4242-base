@@ -9,6 +9,8 @@ urlpatterns = [
     path("", include("workouts.urls")),
     path("", include("suggested_workouts.urls")),
     path("", include("exercises.urls")),
+    path("", include("users.urls")),
+    path("", include("comments.urls")),
 ]
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
