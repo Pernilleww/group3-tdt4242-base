@@ -8,7 +8,7 @@ from django.utils import timezone
 from workouts.models import Exercise, ExerciseInstance
 from workouts.serializers import ExerciseSerializer
 from django.urls import reverse
-from suggested_workouts.views import createSuggestedWorkouts, detailedSuggestedWorkout
+from suggested_workouts.views import create_suggested_workouts, detailed_suggested_workouts
 from rest_framework import status
 from suggested_workouts.views import response_messages
 

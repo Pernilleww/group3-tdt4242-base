@@ -51,7 +51,6 @@ def api_root(request, format=None):
                 "workout-file-list", request=request, format=format
             ),
             "comments": reverse("comment-list", request=request, format=format),
-            "likes": reverse("like-list", request=request, format=format),
         }
     )
 
@@ -65,10 +64,10 @@ class RememberMe(APIView):
             return Response({"remember_me": self.rememberme()})
 
     def post(self, request):
-        cookieObject = namedtuple("Cookies", request.COOKIES.keys())(
+        cookie_object = namedtuple("Cookies", request.COOKIES.keys())(
             *request.COOKIES.values()
         )
-        user = self.get_user(cookieObject)
+        user = self.get_user(cookie_object)
         refresh = RefreshToken.for_user(user)
         return Response(
             {
@@ -77,8 +76,8 @@ class RememberMe(APIView):
             }
         )
 
-    def get_user(self, cookieObject):
-        decode = base64.b64decode(cookieObject.remember_me)
+    def get_user(self, cookie_object):
+        decode = base64.b64decode(cookie_object.remember_me)
         user, sign = pickle.loads(decode)
 
         if sign == self.sign_user(user):
@@ -119,27 +118,23 @@ class WorkoutList(
         serializer.save(owner=self.request.user)
 
     def handleExpiredPlannedWorkouts(self, qs):
-        timeNow = datetime.now()
-        timeNowAdjusted = pytz.utc.localize(timeNow)
+        time_now = datetime.now()
+        time_now_adjusted = pytz.utc.localize(time_now)
         for i in range(0, len(qs)):
-            if qs[i].planned:
-                if timeNowAdjusted > qs[i].date:
-                    # Update: set planned to false
-                    qs[i].planned = False
-                    qs[i].save()
+            if qs[i].planned and time_now_adjusted > qs[i].date:
+                qs[i].planned = False
+                qs[i].save()
         return qs
 
     def get_queryset(self):
-        qs = Workout.objects.none()
-        if self.request.user:
-            qs = Workout.objects.filter(
-                Q(visibility="PU")
-                | Q(owner=self.request.user)
-                | (Q(visibility="CO") & Q(owner__coach=self.request.user))
-                | (Q(visibility="PR") & Q(owner=self.request.user))
-            ).distinct()
+        qs = Workout.objects.filter(
+            Q(visibility="PU")
+            | Q(owner=self.request.user)
+            | (Q(visibility="CO") & Q(owner__coach=self.request.user))
+            | (Q(visibility="PR") & Q(owner=self.request.user))
+        ).distinct()
 
-            qs = self.handleExpiredPlannedWorkouts(qs)
+        qs = self.handleExpiredPlannedWorkouts(qs)
         return qs
 
 
@@ -221,15 +216,13 @@ class ExerciseInstanceList(
         return self.create(request, *args, **kwargs)
 
     def get_queryset(self):
-        qs = ExerciseInstance.objects.none()
-        if self.request.user:
-            qs = ExerciseInstance.objects.filter(
-                Q(workout__owner=self.request.user)
-                | (
-                    (Q(workout__visibility="CO") | Q(workout__visibility="PU"))
-                    & Q(workout__owner__coach=self.request.user)
-                ) | (Q(suggested_workout__coach=self.request.user) | Q(suggested_workout__athlete=self.request.user))
-            ).distinct()
+        qs = ExerciseInstance.objects.filter(
+            Q(workout__owner=self.request.user)
+            | (
+                (Q(workout__visibility="CO") | Q(workout__visibility="PU"))
+                & Q(workout__owner__coach=self.request.user)
+            ) | (Q(suggested_workout__coach=self.request.user) | Q(suggested_workout__athlete=self.request.user))
+        ).distinct()
 
         return qs
 
@@ -278,23 +271,19 @@ class WorkoutFileList(
         serializer.save(owner=self.request.user)
 
     def get_queryset(self):
-        qs = WorkoutFile.objects.none()
-        if self.request.user:
-            qs = WorkoutFile.objects.filter(
-                Q(owner=self.request.user)
-                | Q(workout__owner=self.request.user)
-                | (
-                    Q(workout__visibility="CO")
-                    & Q(workout__owner__coach=self.request.user)
-                )
-            ).distinct()
-
+        qs = WorkoutFile.objects.filter(
+            Q(owner=self.request.user)
+            | Q(workout__owner=self.request.user)
+            | (
+                Q(workout__visibility="CO")
+                & Q(workout__owner__coach=self.request.user)
+            )
+        ).distinct()
         return qs
 
 
 class WorkoutFileDetail(
     mixins.RetrieveModelMixin,
-    mixins.UpdateModelMixin,
     mixins.DestroyModelMixin,
     generics.GenericAPIView,
 ):
