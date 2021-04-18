@@ -51,11 +51,17 @@ class SuggestedWorkoutSerializer(serializers.ModelSerializer):
         instance.athlete = validated_data.get("athlete", instance.athlete)
         instance.save()
 
-    # Handle ExerciseInstances
+        self.handle_exercise_instances(
+            exercise_instances, exercise_instances_data, instance)
 
-    # This updates existing exercise instances without adding or deleting object.
-    # zip() will yield n 2-tuples, where n is
-    # min(len(exercise_instance), len(exercise_instance_data))
+        self.handle_workout_files(validated_data, instance)
+
+        return instance
+
+    def handle_exercise_instances(self, exercise_instances, exercise_instances_data, instance):
+        # This updates existing exercise instances without adding or deleting object.
+        # zip() will yield n 2-tuples, where n is
+        # min(len(exercise_instance), len(exercise_instance_data))
         for exercise_instance, exercise_instance_data in zip(
                 exercise_instances.all(), exercise_instances_data):
             exercise_instance.exercise = exercise_instance_data.get(
@@ -81,8 +87,7 @@ class SuggestedWorkoutSerializer(serializers.ModelSerializer):
             for i in range(len(exercise_instances_data), len(exercise_instances.all())):
                 exercise_instances.all()[i].delete()
 
-        # Handle WorkoutFiles
-
+    def handle_workout_files(self, validated_data, instance):
         if "suggested_workout_files" in validated_data:
             files_data = validated_data.pop("suggested_workout_files")
             files = instance.suggested_workout_files
@@ -103,8 +108,6 @@ class SuggestedWorkoutSerializer(serializers.ModelSerializer):
             elif len(files_data) < len(files.all()):
                 for i in range(len(files_data), len(files.all())):
                     files.all()[i].delete()
-
-        return instance
 
     def get_coach_username(self, obj):
         return obj.coach.username
