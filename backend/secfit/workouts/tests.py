@@ -2,7 +2,8 @@ from django.contrib.auth import get_user_model
 from django.test import RequestFactory, TestCase
 from workouts.permissions import IsOwner, IsOwnerOfWorkout, IsCoachAndVisibleToCoach, IsCoachOfWorkoutAndVisibleToCoach, IsPublic, IsWorkoutPublic, IsReadOnly
 from django.utils import timezone
-from workouts.models import Workout, ExerciseInstance, Exercise, WorkoutFile
+from workouts.models import Workout, WorkoutFile
+from exercises.models import ExerciseInstance, Exercise
 from workouts.serializers import WorkoutSerializer, WorkoutFileSerializer, ExerciseInstanceSerializer
 from rest_framework.test import APIRequestFactory, APITestCase, APIClient, force_authenticate
 from rest_framework import status

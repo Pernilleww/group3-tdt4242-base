@@ -1,8 +1,10 @@
 from rest_framework import serializers
 from .models import SuggestedWorkout
 from users.models import User
-from workouts.serializers import WorkoutFileSerializer, ExerciseInstanceSerializer
-from workouts.models import ExerciseInstance, WorkoutFile, Exercise
+from workouts.serializers import WorkoutFileSerializer
+from workouts.models import WorkoutFile
+from exercises.models import ExerciseInstance, Exercise
+from exercises.serializers import ExerciseInstanceSerializer
 
 
 class SuggestedWorkoutSerializer(serializers.ModelSerializer):
