@@ -693,10 +693,10 @@ class IntegrationTestPlannedWorkout(APITestCase):
                                         country='Norway', city='Trondheim', street_address='Sandgata 19'
                                         )
         self.athlete.save()
-        self.timeNow = datetime.now()
-        self.timeNowAdjusted = pytz.utc.localize(self.timeNow)
-        self.passedDate = self.timeNowAdjusted - timedelta(days=365)
-        self.futureDate = self.timeNowAdjusted + timedelta(days=365)
+        self.time_now = datetime.now()
+        self.time_now_adjusted = pytz.utc.localize(self.time_now)
+        self.passedDate = self.time_now_adjusted - timedelta(days=365)
+        self.futureDate = self.time_now_adjusted + timedelta(days=365)
         self.passedPlannedWorkout = Workout.objects.create(
             id=2, name='Planned workout', date=self.passedDate, visibility='PU', planned=True, owner=self.athlete)
         self.passedPlannedWorkout.save()
