@@ -114,8 +114,14 @@ class WorkoutSerializer(serializers.HyperlinkedModelSerializer):
         instance.date = validated_data.get("date", instance.date)
         instance.save()
 
-        # Handle ExerciseInstances
+        self.handle_exercise_instances(
+            exercise_instances, exercise_instances_data, instance)
 
+        self.handle_workout_files(validated_data, instance)
+
+        return instance
+
+    def handle_exercise_instances(self, exercise_instances, exercise_instances_data, instance):
         # This updates existing exercise instances without adding or deleting object.
         # zip() will yield n 2-tuples, where n is
         # min(len(exercise_instance), len(exercise_instance_data))
@@ -145,8 +151,7 @@ class WorkoutSerializer(serializers.HyperlinkedModelSerializer):
             for i in range(len(exercise_instances_data), len(exercise_instances.all())):
                 exercise_instances.all()[i].delete()
 
-        # Handle WorkoutFiles
-
+    def handle_workout_files(self, validated_data, instance):
         if "files" in validated_data:
             files_data = validated_data.pop("files")
             files = instance.files
@@ -167,8 +172,6 @@ class WorkoutSerializer(serializers.HyperlinkedModelSerializer):
             elif len(files_data) < len(files.all()):
                 for i in range(len(files_data), len(files.all())):
                     files.all()[i].delete()
-
-        return instance
 
     def get_owner_username(self, obj):
         return obj.owner.username
