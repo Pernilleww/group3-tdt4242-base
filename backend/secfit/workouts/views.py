@@ -24,7 +24,6 @@ from workouts.mixins import CreateListModelMixin
 from workouts.models import Workout, WorkoutFile
 from workouts.serializers import WorkoutSerializer
 from workouts.serializers import WorkoutFileSerializer
-from exercises.serializers import ExerciseInstanceSerializer, ExerciseSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
 import json

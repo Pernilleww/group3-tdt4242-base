@@ -4,6 +4,7 @@ from rest_framework import serializers
 from rest_framework.serializers import HyperlinkedRelatedField
 from workouts.models import Workout, WorkoutFile
 from suggested_workouts.models import SuggestedWorkout
+from exercises.models import ExerciseInstance
 from exercises.serializers import ExerciseInstanceSerializer
 from datetime import datetime
 import pytz
