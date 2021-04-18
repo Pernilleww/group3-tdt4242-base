@@ -8,7 +8,6 @@ from rest_framework_simplejwt.views import (
 
 urlpatterns = format_suffix_patterns(
     [
-        path("", views.api_root),
         path("api/workouts/", views.WorkoutList.as_view(), name="workout-list"),
         path(
             "api/workouts/<int:pk>/",
@@ -44,7 +43,8 @@ urlpatterns = format_suffix_patterns(
         path("", include("users.urls")),
         path("", include("comments.urls")),
         path("api/auth/", include("rest_framework.urls")),
-        path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
+        path("api/token/", TokenObtainPairView.as_view(),
+             name="token_obtain_pair"),
         path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
         path("api/remember_me/", views.RememberMe.as_view(), name="remember_me"),
     ]
