@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from rest_framework import generics, mixins
-from workouts.mixins import CreateListModelMixin
+from utils.mixins import CreateListModelMixin
 from exercises.serializers import ExerciseInstanceSerializer, ExerciseSerializer
 from rest_framework import permissions
 from workouts.permissions import IsOwnerOfWorkout

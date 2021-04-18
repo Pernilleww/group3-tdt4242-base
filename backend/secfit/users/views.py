@@ -1,6 +1,6 @@
 import django
 from rest_framework import mixins, generics
-from workouts.mixins import CreateListModelMixin
+from utils.mixins import CreateListModelMixin
 from rest_framework import permissions
 from users.serializers import (
     UserSerializer,
@@ -29,7 +29,6 @@ from collections import namedtuple
 import base64
 import pickle
 from django.core.signing import Signer
-
 
 
 class UserList(mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericAPIView):

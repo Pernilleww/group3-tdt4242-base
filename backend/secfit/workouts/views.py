@@ -20,7 +20,7 @@ from workouts.permissions import (
     IsWorkoutPublic,
     RememberMePermission
 )
-from workouts.mixins import CreateListModelMixin
+from utils.mixins import CreateListModelMixin
 from workouts.models import Workout, WorkoutFile
 from workouts.serializers import WorkoutSerializer
 from workouts.serializers import WorkoutFileSerializer
