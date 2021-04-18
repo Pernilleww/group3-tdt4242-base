@@ -13,7 +13,6 @@ from django.urls import reverse
 from datetime import datetime, timedelta
 import pytz
 from rest_framework.request import Request
-from workouts.views import RememberMe
 
 import unittest.mock
 from django.core.files import File
@@ -797,33 +796,6 @@ class IntegrationTestPlannedWorkout(APITestCase):
             data=json.dumps(invalid_payload),
             content_type='application/json')
         self.assertEquals(response.status_code, status.HTTP_400_BAD_REQUEST)
-
-
-class RememberMeTestCase(APITestCase):
-    def setUp(self):
-        self.client = APIClient()
-        self.factory = APIRequestFactory()
-        self.user = get_user_model()(id=1, username='user', email='email@email.com', phone_number='92134654',
-                                     country='Norway', city='Paradise city', street_address='Hemmelig'
-                                     )
-        self.user.save()
-        self.cookie = None
-
-    def test_get_unauthenticated(self):
-        response = self.client.get(reverse('remember_me'))
-        self.assertEquals(response.status_code, 403)
-
-    def test_get_and_post_authenticated(self):
-        self.client.force_authenticate(self.user)
-        response = self.client.get(reverse('remember_me'))
-        self.assertEquals(response.status_code, 200)
-
-        self.cookie = response.data['remember_me']
-        request = self.factory.get(reverse('remember_me'))
-        force_authenticate(request, user=self.user)
-        request.COOKIES = {'remember_me': self.cookie}
-        response = RememberMe.as_view()(request)
-        self.assertEquals(response.status_code, 200)
 
 
 class WorkoutFileTestCase(APITestCase):
