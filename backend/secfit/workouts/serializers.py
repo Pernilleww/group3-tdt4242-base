@@ -2,7 +2,7 @@
 """
 from rest_framework import serializers
 from rest_framework.serializers import HyperlinkedRelatedField
-from workouts.models import Workout, Exercise, ExerciseInstance, WorkoutFile, RememberMe
+from workouts.models import Workout, Exercise, ExerciseInstance, WorkoutFile
 from datetime import datetime
 import pytz
 from suggested_workouts.models import SuggestedWorkout
@@ -185,9 +185,3 @@ class ExerciseSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Exercise
         fields = ["url", "id", "name", "description", "unit", "instances"]
-
-
-class RememberMeSerializer(serializers.HyperlinkedModelSerializer):
-    class Meta:
-        model = RememberMe
-        fields = ["remember_me"]

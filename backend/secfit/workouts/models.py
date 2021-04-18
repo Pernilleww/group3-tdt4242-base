@@ -82,9 +82,3 @@ class WorkoutFile(models.Model):
     )
     file = models.FileField(upload_to=workout_directory_path)
 
-
-class RememberMe(models.Model):
-    remember_me = models.CharField(max_length=500)
-
-    def __str__(self):
-        return self.remember_me
