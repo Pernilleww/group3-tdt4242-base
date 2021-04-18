@@ -103,15 +103,15 @@ class RememberMe(
 class WorkoutList(
     mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericAPIView
 ):
-    
+
     serializer_class = WorkoutSerializer
     permission_classes = [
         permissions.IsAuthenticated
-    ] 
+    ]
     parser_classes = [
         MultipartJsonParserWorkout,
         JSONParser,
-    ]  
+    ]
     filter_backends = [filters.OrderingFilter]
     ordering_fields = ["name", "date", "owner__username"]
 
@@ -128,11 +128,9 @@ class WorkoutList(
         timeNow = datetime.now()
         timeNowAdjusted = pytz.utc.localize(timeNow)
         for i in range(0, len(qs)):
-            if qs[i].planned:
-                if timeNowAdjusted > qs[i].date:
-                    # Update: set planned to false
-                    qs[i].planned = False
-                    qs[i].save()
+            if qs[i].planned and timeNowAdjusted > qs[i].date:
+                qs[i].planned = False
+                qs[i].save()
         return qs
 
     def get_queryset(self):
@@ -144,7 +142,7 @@ class WorkoutList(
                 | (Q(visibility="CO") & Q(owner__coach=self.request.user))
                 | (Q(visibility="PR") & Q(owner=self.request.user))
             ).distinct()
-            
+
             qs = self.handleExpiredPlannedWorkouts(qs)
         return qs
 
