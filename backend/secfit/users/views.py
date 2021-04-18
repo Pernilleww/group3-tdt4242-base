@@ -119,11 +119,9 @@ class OfferList(
             qp = self.request.query_params
             u = self.request.user
 
-            # filtering by status (if provided)
             s = qp.get("status", None)
             qs = self.filter_by_status(qs, qp, s, u)
 
-           # filtering by category (sent or received)
             c = qp.get("category", None)
             qs = self.filter_by_category(qs, u, c, qp)
         return qs
