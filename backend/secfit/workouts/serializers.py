@@ -61,15 +61,15 @@ class WorkoutSerializer(serializers.HyperlinkedModelSerializer):
         extra_kwargs = {"owner": {"read_only": True}}
 
     def create(self, validated_data):
-        timeNow = datetime.now()
-        timeNowAdjusted = pytz.utc.localize(timeNow)
+        time_now = datetime.now()
+        time_now_adjusted = pytz.utc.localize(time_now)
 
         if validated_data["planned"]:
-            if timeNowAdjusted >= validated_data["date"]:
+            if time_now_adjusted >= validated_data["date"]:
                 raise serializers.ValidationError(
                     {"date": ["Date must be a future date"]})
         else:
-            if timeNowAdjusted <= validated_data["date"]:
+            if time_now_adjusted <= validated_data["date"]:
                 raise serializers.ValidationError(
                     {"date": ["Date must be an old date"]})
 
@@ -92,15 +92,15 @@ class WorkoutSerializer(serializers.HyperlinkedModelSerializer):
         return workout
 
     def update(self, instance, validated_data):
-        timeNow = datetime.now()
-        timeNowAdjusted = pytz.utc.localize(timeNow)
+        time_now = datetime.now()
+        time_now_adjusted = pytz.utc.localize(time_now)
 
         if validated_data["planned"]:
-            if timeNowAdjusted >= validated_data["date"]:
+            if time_now_adjusted >= validated_data["date"]:
                 raise serializers.ValidationError(
                     {"date": ["Date must be a future date"]})
         else:
-            if timeNowAdjusted <= validated_data["date"]:
+            if time_now_adjusted <= validated_data["date"]:
                 raise serializers.ValidationError(
                     {"date": ["Date must be an old date"]})
 
