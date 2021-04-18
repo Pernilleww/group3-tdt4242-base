@@ -27,7 +27,6 @@ class CommentList(
         serializer.save(owner=self.request.user)
 
     def get_queryset(self):
-        queryset = Comment.objects.all()
         qs = Comment.objects.filter(
             Q(workout__visibility="PU")
             | Q(owner=self.request.user)

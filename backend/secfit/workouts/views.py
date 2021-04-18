@@ -135,7 +135,6 @@ class WorkoutList(
         return qs
 
     def get_queryset(self):
-        qs = Workout.objects.none()
         qs = Workout.objects.filter(
             Q(visibility="PU")
             | Q(owner=self.request.user)
@@ -225,7 +224,6 @@ class ExerciseInstanceList(
         return self.create(request, *args, **kwargs)
 
     def get_queryset(self):
-        qs = ExerciseInstance.objects.none()
         qs = ExerciseInstance.objects.filter(
             Q(workout__owner=self.request.user)
             | (
