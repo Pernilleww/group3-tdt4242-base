@@ -17,6 +17,5 @@ def api_root(request, format=None):
                 "workout-file-list", request=request, format=format
             ),
             "comments": reverse("comment-list", request=request, format=format),
-            "likes": reverse("like-list", request=request, format=format),
         }
     )
