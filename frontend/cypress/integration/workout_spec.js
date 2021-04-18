@@ -35,7 +35,7 @@ describe("Workout", () => {
 
         cy.contains("Date must be a future date");
 
-        cy.get('input[name="date"]').type("2021-04-06T13:31");
+        cy.get('input[name="date"]').type("2021-12-06T13:31");
 
 
         cy.get("#btn-ok-workout").click();
@@ -43,7 +43,7 @@ describe("Workout", () => {
         cy.url().should('include', '/workouts.html');
 
         cy.contains("Owner: athlete");
-        cy.contains("Plan workout test")
+        cy.contains("Plan workout test");
     });
 
 
