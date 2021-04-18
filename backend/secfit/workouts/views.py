@@ -1,6 +1,6 @@
 from rest_framework import generics, mixins
 from rest_framework import permissions
-
+from rest_framework.views import APIView
 from rest_framework.parsers import (
     JSONParser,
 )
@@ -17,7 +17,7 @@ from workouts.permissions import (
     IsCoachOfWorkoutAndVisibleToCoach,
     IsReadOnly,
     IsPublic,
-    IsWorkoutPublic,
+    IsWorkoutPublic
 )
 from workouts.mixins import CreateListModelMixin
 from workouts.models import Workout, Exercise, ExerciseInstance, WorkoutFile
@@ -55,12 +55,7 @@ def api_root(request, format=None):
     )
 
 
-class RememberMe(
-    mixins.ListModelMixin,
-    mixins.CreateModelMixin,
-    mixins.DestroyModelMixin,
-    generics.GenericAPIView,
-):
+class RememberMe(APIView):
 
     serializer_class = RememberMeSerializer
 
@@ -103,15 +98,15 @@ class RememberMe(
 class WorkoutList(
     mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericAPIView
 ):
-    
+
     serializer_class = WorkoutSerializer
     permission_classes = [
         permissions.IsAuthenticated
-    ] 
+    ]
     parser_classes = [
         MultipartJsonParserWorkout,
         JSONParser,
-    ]  
+    ]
     filter_backends = [filters.OrderingFilter]
     ordering_fields = ["name", "date", "owner__username"]
 
@@ -144,7 +139,7 @@ class WorkoutList(
                 | (Q(visibility="CO") & Q(owner__coach=self.request.user))
                 | (Q(visibility="PR") & Q(owner=self.request.user))
             ).distinct()
-            
+
             qs = self.handleExpiredPlannedWorkouts(qs)
         return qs
 

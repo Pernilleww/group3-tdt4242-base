@@ -4,7 +4,7 @@ from workouts.permissions import IsOwner, IsOwnerOfWorkout, IsCoachAndVisibleToC
 from django.utils import timezone
 from workouts.models import Workout, ExerciseInstance, Exercise
 from workouts.serializers import WorkoutSerializer
-from rest_framework.test import APIRequestFactory, APITestCase, APIClient
+from rest_framework.test import APIRequestFactory, APITestCase, APIClient, force_authenticate
 from rest_framework import status
 from unittest import skip
 from users.models import User
@@ -13,6 +13,7 @@ from django.urls import reverse
 from datetime import datetime, timedelta
 import pytz
 from rest_framework.request import Request
+from workouts.views import RememberMe
 
 '''
     Test permmisions.py
@@ -704,7 +705,7 @@ class IntegrationTestPlannedWorkout(APITestCase):
 
     """
     Testing if the endpoint to api/workouts automatically logs a workout by setting the planned attribute
-    for the workout from True to False when a date has passed 
+    for the workout from True to False when a date has passed
     """
 
     def test_autolog_functionality(self):
@@ -793,3 +794,30 @@ class IntegrationTestPlannedWorkout(APITestCase):
             data=json.dumps(invalid_payload),
             content_type='application/json')
         self.assertEquals(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class RememberMeTestCase(APITestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.factory = APIRequestFactory()
+        self.user = get_user_model()(id=1, username='user', email='email@email.com', phone_number='92134654',
+                                     country='Norway', city='Paradise city', street_address='Hemmelig'
+                                     )
+        self.user.save()
+        self.cookie = None
+
+    def test_get_unauthenticated(self):
+        response = self.client.get(reverse('remember_me'))
+        self.assertEquals(response.status_code, 403)
+
+    def test_get_and_post_authenticated(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.get(reverse('remember_me'))
+        self.assertEquals(response.status_code, 200)
+
+        self.cookie = response.data['remember_me']
+        request = self.factory.get(reverse('remember_me'))
+        force_authenticate(request, user=self.user)
+        request.COOKIES = {'remember_me': self.cookie}
+        response = RememberMe.as_view()(request)
+        self.assertEquals(response.status_code, 200)
