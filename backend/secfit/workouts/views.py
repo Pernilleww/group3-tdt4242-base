@@ -50,7 +50,6 @@ def api_root(request, format=None):
                 "workout-file-list", request=request, format=format
             ),
             "comments": reverse("comment-list", request=request, format=format),
-            "likes": reverse("like-list", request=request, format=format),
         }
     )
 
@@ -58,7 +57,6 @@ def api_root(request, format=None):
 class RememberMe(
     mixins.ListModelMixin,
     mixins.CreateModelMixin,
-    mixins.DestroyModelMixin,
     generics.GenericAPIView,
 ):
 
@@ -134,16 +132,14 @@ class WorkoutList(
         return qs
 
     def get_queryset(self):
-        qs = Workout.objects.none()
-        if self.request.user:
-            qs = Workout.objects.filter(
-                Q(visibility="PU")
-                | Q(owner=self.request.user)
-                | (Q(visibility="CO") & Q(owner__coach=self.request.user))
-                | (Q(visibility="PR") & Q(owner=self.request.user))
-            ).distinct()
+        qs = Workout.objects.filter(
+            Q(visibility="PU")
+            | Q(owner=self.request.user)
+            | (Q(visibility="CO") & Q(owner__coach=self.request.user))
+            | (Q(visibility="PR") & Q(owner=self.request.user))
+        ).distinct()
 
-            qs = self.handleExpiredPlannedWorkouts(qs)
+        qs = self.handleExpiredPlannedWorkouts(qs)
         return qs
 
 
@@ -225,15 +221,13 @@ class ExerciseInstanceList(
         return self.create(request, *args, **kwargs)
 
     def get_queryset(self):
-        qs = ExerciseInstance.objects.none()
-        if self.request.user:
-            qs = ExerciseInstance.objects.filter(
-                Q(workout__owner=self.request.user)
-                | (
-                    (Q(workout__visibility="CO") | Q(workout__visibility="PU"))
-                    & Q(workout__owner__coach=self.request.user)
-                ) | (Q(suggested_workout__coach=self.request.user) | Q(suggested_workout__athlete=self.request.user))
-            ).distinct()
+        qs = ExerciseInstance.objects.filter(
+            Q(workout__owner=self.request.user)
+            | (
+                (Q(workout__visibility="CO") | Q(workout__visibility="PU"))
+                & Q(workout__owner__coach=self.request.user)
+            ) | (Q(suggested_workout__coach=self.request.user) | Q(suggested_workout__athlete=self.request.user))
+        ).distinct()
 
         return qs
 
@@ -282,23 +276,19 @@ class WorkoutFileList(
         serializer.save(owner=self.request.user)
 
     def get_queryset(self):
-        qs = WorkoutFile.objects.none()
-        if self.request.user:
-            qs = WorkoutFile.objects.filter(
-                Q(owner=self.request.user)
-                | Q(workout__owner=self.request.user)
-                | (
-                    Q(workout__visibility="CO")
-                    & Q(workout__owner__coach=self.request.user)
-                )
-            ).distinct()
-
+        qs = WorkoutFile.objects.filter(
+            Q(owner=self.request.user)
+            | Q(workout__owner=self.request.user)
+            | (
+                Q(workout__visibility="CO")
+                & Q(workout__owner__coach=self.request.user)
+            )
+        ).distinct()
         return qs
 
 
 class WorkoutFileDetail(
     mixins.RetrieveModelMixin,
-    mixins.UpdateModelMixin,
     mixins.DestroyModelMixin,
     generics.GenericAPIView,
 ):

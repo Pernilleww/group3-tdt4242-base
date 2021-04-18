@@ -1,11 +1,11 @@
 from django.contrib.auth import get_user_model, password_validation
 from django.test import TestCase
-from users.serializers import UserSerializer
+from users.serializers import UserSerializer, AthleteFileSerializer
 from rest_framework.test import APIRequestFactory, APITestCase, APIClient
 from rest_framework.request import Request
 from random import choice
 from string import ascii_uppercase
-from users.models import User, Offer
+from users.models import User, Offer, AthleteFile
 from django import forms
 from rest_framework import serializers, status
 from rest_framework.exceptions import ValidationError
@@ -16,6 +16,8 @@ from users.views import OfferList
 from django.urls import reverse
 from django.db.models import Q
 from users.serializers import OfferSerializer
+import unittest.mock
+from django.core.files import File
 '''
     Serializer tests
 '''
@@ -164,6 +166,19 @@ class UserSerializerTestCase(APITestCase):
     def test_valid_pasword(self):
         self.new_serializer_data['password'] = '12345678910'
         self.new_serializer_data['password1'] = '12345678910'
+        self.data = {'password': '12345678910', 'password1': '12345678910'}
+        user_ser = UserSerializer(instance=None, data=self.data)
+        # Returns the password as the value
+        self.assertEquals(user_ser.validate_password(
+            '12345678910'), self.data['password'])
+
+    def test_check_password_match(self):
+        self.new_serializer_data['password'] = 'passord1'
+        self.new_serializer_data['password1'] = 'passord2'
+        with self.assertRaises(serializers.ValidationError):
+            UserSerializer(data=self.new_serializer_data).validate_password(
+                'Passwords must match!')
+
         self.data = {'password': '12345678910', 'password1': '12345678910'}
         user_ser = UserSerializer(instance=None, data=self.data)
         # Returns the password as the value
@@ -889,3 +904,50 @@ class two_way_domain_test(TestCase):
         print("The combinations that should have worked: {}\nThe combinations that should not have worked: {}".format(
             self.failures_201, self.failures_400))
         print("-------------------------------------------------------------------------------------------------------------------------------")
+
+
+class AthleteFileTestCase(APITestCase):
+    def setUp(self):
+        self.file_mock = unittest.mock.MagicMock(spec=File, name='FileMock')
+        self.file_mock.name = 'athleteFile1.pdf'
+        self.owner = get_user_model()(id=1, username='owner', email='email@fake.com', phone_number='92134654',
+                                      country='Norway', city='Hmm', street_address='Hemmelig'
+                                      )
+        self.owner.save()
+        self.athlete = get_user_model()(id=1, username='athlete', email='athlete@fake.com', phone_number='92134654',
+                                        country='Norway', city='Hmm', street_address='Hemmelig'
+                                        )
+        self.athlete.save()
+        self.file_mock2 = unittest.mock.MagicMock(spec=File, name='FileMock')
+        self.file_mock2.name = 'athleteFile2.pdf'
+        self.athlete_file = AthleteFile.objects.create(
+            id=1, owner=self.owner, athlete=self.athlete, file=self.file_mock)
+        self.athlete_file.save()
+        self.data = {'id': 2, 'owner': self.owner,
+                     'athlete': self.athlete, 'file': self.file_mock2}
+
+        self.factory = APIRequestFactory()
+        self.client = APIClient()
+
+    def test_create_athlete_file(self):
+        athlete_file = AthleteFileSerializer.create(
+            AthleteFileSerializer(self.data), validated_data=self.data)
+
+        athlete_file_retrieved_from_database = AthleteFile.objects.get(id=2)
+        self.assertEquals(athlete_file_retrieved_from_database, athlete_file)
+
+    def test_queryset(self):
+        self.client.force_authenticate(self.owner)
+        response = self.client.get(
+            reverse('athlete-file-list'))
+        request = self.factory.get(
+            reverse('athlete-file-list'))
+
+        qs = AthleteFile.objects.filter(
+            Q(athlete=self.owner) | Q(owner=self.owner)
+        ).distinct()
+
+        athlete_file_serializer = AthleteFileSerializer(
+            qs, many=True, context={'request': request})
+        self.assertEquals(response.data['results'],
+                          athlete_file_serializer.data)

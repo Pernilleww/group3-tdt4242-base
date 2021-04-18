@@ -34,9 +34,6 @@ class WorkoutFileSerializer(serializers.HyperlinkedModelSerializer):
         model = WorkoutFile
         fields = ["url", "id", "owner", "file", "workout", "suggested_workout"]
 
-    def create(self, validated_data):
-        return WorkoutFile.objects.create(**validated_data)
-
 
 class WorkoutSerializer(serializers.HyperlinkedModelSerializer):
     owner_username = serializers.SerializerMethodField()
