@@ -59,9 +59,7 @@ class SuggestedWorkoutSerializer(serializers.ModelSerializer):
         return instance
 
     def handle_exercise_instances(self, exercise_instances, exercise_instances_data, instance):
-        # This updates existing exercise instances without adding or deleting object.
-        # zip() will yield n 2-tuples, where n is
-        # min(len(exercise_instance), len(exercise_instance_data))
+
         for exercise_instance, exercise_instance_data in zip(
                 exercise_instances.all(), exercise_instances_data):
             exercise_instance.exercise = exercise_instance_data.get(
