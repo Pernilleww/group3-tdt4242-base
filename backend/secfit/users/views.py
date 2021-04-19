@@ -30,6 +30,7 @@ import base64
 import pickle
 from django.core.signing import Signer
 from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import RefreshToken
 
 
 class UserList(mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericAPIView):

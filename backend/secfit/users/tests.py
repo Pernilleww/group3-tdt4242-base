@@ -975,7 +975,7 @@ class RememberMeTestCase(APITestCase):
         self.assertEquals(response.status_code, 200)
 
         self.cookie = response.data['remember_me']
-        request = self.factory.get(reverse('remember_me'))
+        request = self.factory.post(reverse('remember_me'))
         force_authenticate(request, user=self.user)
         request.COOKIES = {'remember_me': self.cookie}
         response = RememberMe.as_view()(request)
