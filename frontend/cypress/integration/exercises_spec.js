@@ -100,7 +100,7 @@ describe("Exercises", () => {
         cy.contains("Sit-up Edit").click();
 
         cy.get("#btn-edit-exercise").click();
-        cy.get("#btn-delete-exercise").click();
+        cy.get("#btn-delete-exercise").should("be.visible").click();
 
         cy.contains("Sit-up").should("not.exist");
 
