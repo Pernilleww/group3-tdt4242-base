@@ -21,7 +21,7 @@ from django.contrib.auth import get_user_model
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from rest_framework.parsers import MultiPartParser, FormParser
-from users.permissions import IsCurrentUser, IsAthlete, IsCoach
+from users.permissions import IsCurrentUser, IsAthlete, IsCoach, RememberMePermission
 from workouts.permissions import IsOwner, IsReadOnly
 from django.core.exceptions import PermissionDenied
 from rest_framework.response import Response
@@ -29,6 +29,8 @@ from collections import namedtuple
 import base64
 import pickle
 from django.core.signing import Signer
+from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import RefreshToken
 
 
 class UserList(mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericAPIView):
@@ -200,19 +202,12 @@ class AthleteFileDetail(
         return self.destroy(request, *args, **kwargs)
 
 
-class RememberMe(
-    mixins.ListModelMixin,
-    mixins.CreateModelMixin,
-    mixins.DestroyModelMixin,
-    generics.GenericAPIView,
-):
+class RememberMe(APIView):
 
     serializer_class = RememberMeSerializer
 
     def get(self, request):
-        if request.user.is_authenticated == False:
-            raise PermissionDenied
-        else:
+        if RememberMePermission.has_permission(RememberMePermission, request=request):
             return Response({"remember_me": self.rememberme()})
 
     def post(self, request):
