@@ -69,9 +69,9 @@ async function fetchSuggestedWorkouts() {
 
             let table = aWorkout.querySelector("table");
             let rows = table.querySelectorAll("tr");
-            rows[0].querySelectorAll("td")[1].textContent = workout.coach_username; //Owner
-            rows[1].querySelectorAll("td")[1].textContent = workout.suggested_exercise_instances.length; // Exercises
-            rows[2].querySelectorAll("td")[1].textContent = workout.status === "p" ? "Pending" : "Accept"; // Exercises
+            rows[0].querySelectorAll("td")[1].textContent = workout.coach_username;
+            rows[1].querySelectorAll("td")[1].textContent = workout.suggested_exercise_instances.length;
+            rows[2].querySelectorAll("td")[1].textContent = workout.status === "p" ? "Pending" : "Accept";
 
 
             container.appendChild(aWorkout);

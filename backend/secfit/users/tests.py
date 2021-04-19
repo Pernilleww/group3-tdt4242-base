@@ -19,7 +19,6 @@ from users.serializers import OfferSerializer
 import unittest.mock
 from django.core.files import File
 from users.views import RememberMe
-
 '''
     Serializer tests
 '''
