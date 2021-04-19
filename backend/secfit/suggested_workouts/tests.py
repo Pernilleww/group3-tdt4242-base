@@ -5,8 +5,8 @@ from django.contrib.auth import get_user_model
 from suggested_workouts.models import SuggestedWorkout
 from suggested_workouts.serializer import SuggestedWorkoutSerializer
 from django.utils import timezone
-from workouts.models import Exercise, ExerciseInstance
-from workouts.serializers import ExerciseSerializer
+from exercises.models import Exercise, ExerciseInstance
+from exercises.serializers import ExerciseSerializer
 from django.urls import reverse
 from suggested_workouts.views import create_suggested_workouts, detailed_suggested_workouts
 from rest_framework import status
@@ -88,7 +88,9 @@ class SuggestedWorkoutTestCase(APITestCase):
         }
         new_suggested_workout_serializer = SuggestedWorkoutSerializer(
             data=new_serializer_data)
+        new_suggested_workout_serializer.is_valid()
         self.assertTrue(new_suggested_workout_serializer.is_valid())
+
         new_suggested_workout_serializer.create(validated_data=new_suggested_workout_serializer.validated_data,
                                                 coach=self.coach)
         # Check if suggested workout with the id=2 got created
@@ -240,6 +242,7 @@ class SuggestedWorkoutTestCase(APITestCase):
             content_type='application/json'
         )
         self.assertEquals(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        print(response.data)
         self.assertEqual(response.data['message'],
                          response_messages["error_not_your_athlete"])
 

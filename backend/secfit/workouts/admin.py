@@ -1,9 +1,6 @@
 from django.contrib import admin
 
-from .models import Exercise, ExerciseInstance, Workout, WorkoutFile
+from .models import Workout, WorkoutFile
 
-admin.site.register(Exercise)
-admin.site.register(ExerciseInstance)
 admin.site.register(Workout)
 admin.site.register(WorkoutFile)
-

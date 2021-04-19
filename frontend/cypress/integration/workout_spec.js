@@ -124,7 +124,7 @@ describe("Workout", () => {
         cy.get('input[name="date"]').type("2021-05-06T13:31");
 
 
-        cy.get("#btn-ok-workout").click();
+        cy.get("#btn-ok-workout").click({force: true});
 
 
     });
@@ -160,7 +160,39 @@ describe("Workout", () => {
         cy.get('input[name="date"]').type("2021-01-06T13:31");
 
 
-        cy.get("#btn-ok-workout").click();
+        cy.get("#btn-ok-workout").click({force: true});
+
+    });
+
+    it('should comment a logged workout', function () {
+        cy.visit("/login.html");
+
+        cy.get('input[name="username"]').type("athlete");
+        cy.get('input[name="password"]').type("12345678")
+
+        cy.get("#btn-login").click();
+
+        cy.contains("My Logged Workouts").click();
+
+
+        cy.contains("Log workout test").click({force: true});
+
+
+        cy.contains(" View/Edit Logged Workout");
+
+        cy.get("#comment-area").type("This is a great workout", {force: true}).should("have.value", "This is a great workout");
+        cy.get("#post-comment").click({force:true});
+
+        cy.contains("Now");
+        cy.contains("athlete");
+
+        cy.get("#nav-workouts").should("be.visible").click({force: true});
+
+        cy.contains("Log workout test").click({force: true});
+
+        cy.contains("This is a great workout");
+
+
 
     });
 

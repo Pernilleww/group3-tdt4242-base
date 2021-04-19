@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth import get_user_model
 
+
 class User(AbstractUser):
     coach = models.ForeignKey(
         "self", on_delete=models.CASCADE, related_name="athletes", blank=True, null=True
@@ -10,7 +11,7 @@ class User(AbstractUser):
     country = models.TextField(max_length=50, blank=True)
     city = models.TextField(max_length=50, blank=True)
     street_address = models.TextField(max_length=50, blank=True)
-    
+
 
 def athlete_directory_path(instance, filename):
     return f"users/{instance.athlete.id}/{filename}"
@@ -43,5 +44,13 @@ class Offer(models.Model):
         (DECLINED, "Declined"),
     )
 
-    status = models.CharField(max_length=8, choices=STATUS_CHOICES, default=PENDING)
+    status = models.CharField(
+        max_length=8, choices=STATUS_CHOICES, default=PENDING)
     timestamp = models.DateTimeField(auto_now_add=True)
+
+
+class RememberMe(models.Model):
+    remember_me = models.CharField(max_length=500)
+
+    def __str__(self):
+        return self.remember_me

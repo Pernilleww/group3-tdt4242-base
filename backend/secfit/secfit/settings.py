@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     "users.apps.UsersConfig",
     "comments.apps.CommentsConfig",
     "suggested_workouts.apps.SuggestedWorkoutsConfig",
+    'exercises',
     "corsheaders",
 ]
 

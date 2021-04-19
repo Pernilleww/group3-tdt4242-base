@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model, password_validation
-from users.models import Offer, AthleteFile
+from users.models import Offer, AthleteFile, RememberMe
 from django import forms
 
 
@@ -114,3 +114,9 @@ class OfferSerializer(serializers.HyperlinkedModelSerializer):
             "status",
             "timestamp",
         ]
+
+
+class RememberMeSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = RememberMe
+        fields = ["remember_me"]

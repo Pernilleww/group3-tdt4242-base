@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model, password_validation
 from django.test import TestCase
 from users.serializers import UserSerializer, AthleteFileSerializer
-from rest_framework.test import APIRequestFactory, APITestCase, APIClient
+from rest_framework.test import APIRequestFactory, APITestCase, APIClient, force_authenticate
 from rest_framework.request import Request
 from random import choice
 from string import ascii_uppercase
@@ -18,6 +18,7 @@ from django.db.models import Q
 from users.serializers import OfferSerializer
 import unittest.mock
 from django.core.files import File
+from users.views import RememberMe
 '''
     Serializer tests
 '''
@@ -951,3 +952,30 @@ class AthleteFileTestCase(APITestCase):
             qs, many=True, context={'request': request})
         self.assertEquals(response.data['results'],
                           athlete_file_serializer.data)
+
+
+class RememberMeTestCase(APITestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.factory = APIRequestFactory()
+        self.user = get_user_model()(id=1, username='user', email='email@email.com', phone_number='92134654',
+                                     country='Norway', city='Paradise city', street_address='Hemmelig'
+                                     )
+        self.user.save()
+        self.cookie = None
+
+    def test_get_unauthenticated(self):
+        response = self.client.get(reverse('remember_me'))
+        self.assertEquals(response.status_code, 403)
+
+    def test_get_and_post_authenticated(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.get(reverse('remember_me'))
+        self.assertEquals(response.status_code, 200)
+
+        self.cookie = response.data['remember_me']
+        request = self.factory.get(reverse('remember_me'))
+        force_authenticate(request, user=self.user)
+        request.COOKIES = {'remember_me': self.cookie}
+        response = RememberMe.as_view()(request)
+        self.assertEquals(response.status_code, 200)
