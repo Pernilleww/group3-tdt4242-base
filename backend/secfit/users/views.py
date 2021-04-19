@@ -7,8 +7,7 @@ from users.serializers import (
     OfferSerializer,
     AthleteFileSerializer,
     UserPutSerializer,
-    UserGetSerializer,
-    RememberMeSerializer
+    UserGetSerializer
 )
 from rest_framework.permissions import (
     AllowAny,
@@ -203,9 +202,6 @@ class AthleteFileDetail(
 
 
 class RememberMe(APIView):
-
-    serializer_class = RememberMeSerializer
-
     def get(self, request):
         if RememberMePermission.has_permission(RememberMePermission, request=request):
             return Response({"remember_me": self.rememberme()})
