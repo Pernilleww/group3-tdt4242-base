@@ -1,6 +1,5 @@
 from rest_framework import generics, mixins
 from rest_framework import permissions
-from rest_framework.views import APIView
 from rest_framework.parsers import (
     JSONParser,
 )
@@ -17,8 +16,7 @@ from workouts.permissions import (
     IsCoachOfWorkoutAndVisibleToCoach,
     IsReadOnly,
     IsPublic,
-    IsWorkoutPublic,
-    RememberMePermission
+    IsWorkoutPublic
 )
 from utils.mixins import CreateListModelMixin
 from workouts.models import Workout, WorkoutFile

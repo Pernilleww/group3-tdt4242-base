@@ -1,5 +1,6 @@
 from rest_framework import permissions
 from django.contrib.auth import get_user_model
+from django.core.exceptions import PermissionDenied
 
 
 class IsCurrentUser(permissions.BasePermission):
@@ -34,3 +35,10 @@ class IsCoach(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
         return request.user == obj.athlete.coach
+
+
+class RememberMePermission():
+    def has_permission(self, request):
+        if not request.user.is_authenticated:
+            raise PermissionDenied
+        return True
