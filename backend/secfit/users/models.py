@@ -47,10 +47,3 @@ class Offer(models.Model):
     status = models.CharField(
         max_length=8, choices=STATUS_CHOICES, default=PENDING)
     timestamp = models.DateTimeField(auto_now_add=True)
-
-
-class RememberMe(models.Model):
-    remember_me = models.CharField(max_length=500)
-
-    def __str__(self):
-        return self.remember_me
